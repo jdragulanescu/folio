@@ -7,7 +7,7 @@ tags: [next.js, tailwind-v4, shadcn-ui, next-themes, sidebar, dark-theme]
 # Dependency graph
 requires: []
 provides:
-  - "Next.js 16 project scaffold at dashboard/"
+  - "Next.js 16 project scaffold at project root"
   - "Dark theme with class-based toggling via next-themes"
   - "Responsive sidebar navigation with 6 routes"
   - "Finance color tokens (gain/loss) as CSS custom properties"
@@ -22,19 +22,19 @@ tech-stack:
 
 key-files:
   created:
-    - dashboard/src/components/layout/theme-provider.tsx
-    - dashboard/src/components/layout/app-sidebar.tsx
-    - dashboard/src/app/transactions/page.tsx
-    - dashboard/src/app/options/page.tsx
-    - dashboard/src/app/dividends/page.tsx
-    - dashboard/src/app/deposits/page.tsx
-    - dashboard/src/app/performance/page.tsx
-    - dashboard/.env.example
+    - src/components/layout/theme-provider.tsx
+    - src/components/layout/app-sidebar.tsx
+    - src/app/transactions/page.tsx
+    - src/app/options/page.tsx
+    - src/app/dividends/page.tsx
+    - src/app/deposits/page.tsx
+    - src/app/performance/page.tsx
+    - .env.example
   modified:
-    - dashboard/src/app/layout.tsx
-    - dashboard/src/app/page.tsx
-    - dashboard/src/styles/globals.css
-    - dashboard/src/components/ui/sidebar.tsx
+    - src/app/layout.tsx
+    - src/app/page.tsx
+    - src/styles/globals.css
+    - src/components/ui/sidebar.tsx
 
 key-decisions:
   - "Restructured to src/ directory layout for consistency with plan paths"
@@ -80,20 +80,20 @@ Each task was committed atomically:
 2. **Task 2: Configure dark theme, sidebar layout, and placeholder pages** - `e591a4f` (feat)
 
 ## Files Created/Modified
-- `dashboard/package.json` - Next.js 16 project with shadcn/ui, next-themes, server-only
-- `dashboard/tsconfig.json` - TypeScript config with src/ alias paths
-- `dashboard/src/app/layout.tsx` - Root layout with ThemeProvider, SidebarProvider, AppSidebar
-- `dashboard/src/styles/globals.css` - Tailwind v4 CSS-first config with dark mode and finance tokens
-- `dashboard/src/components/layout/theme-provider.tsx` - next-themes wrapper with dark default
-- `dashboard/src/components/layout/app-sidebar.tsx` - Sidebar with 6 nav items and active state
-- `dashboard/src/app/page.tsx` - Portfolio placeholder page
-- `dashboard/src/app/transactions/page.tsx` - Transactions placeholder page
-- `dashboard/src/app/options/page.tsx` - Options placeholder page
-- `dashboard/src/app/dividends/page.tsx` - Dividends placeholder page
-- `dashboard/src/app/deposits/page.tsx` - Deposits placeholder page
-- `dashboard/src/app/performance/page.tsx` - Performance placeholder page
-- `dashboard/.env.example` - NocoDB connection placeholder variables
-- `dashboard/components.json` - shadcn/ui config updated for src/ structure
+- `package.json` - Next.js 16 project with shadcn/ui, next-themes, server-only
+- `tsconfig.json` - TypeScript config with src/ alias paths
+- `src/app/layout.tsx` - Root layout with ThemeProvider, SidebarProvider, AppSidebar
+- `src/styles/globals.css` - Tailwind v4 CSS-first config with dark mode and finance tokens
+- `src/components/layout/theme-provider.tsx` - next-themes wrapper with dark default
+- `src/components/layout/app-sidebar.tsx` - Sidebar with 6 nav items and active state
+- `src/app/page.tsx` - Portfolio placeholder page
+- `src/app/transactions/page.tsx` - Transactions placeholder page
+- `src/app/options/page.tsx` - Options placeholder page
+- `src/app/dividends/page.tsx` - Dividends placeholder page
+- `src/app/deposits/page.tsx` - Deposits placeholder page
+- `src/app/performance/page.tsx` - Performance placeholder page
+- `.env.example` - NocoDB connection placeholder variables
+- `components.json` - shadcn/ui config updated for src/ structure
 
 ## Decisions Made
 - Restructured from flat to src/ directory layout -- create-next-app generated without src/ but all plan paths reference src/, so relocated app/, components/, lib/, hooks/ into src/ and updated tsconfig paths
@@ -116,7 +116,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (lint verification)
 - **Issue:** shadcn-generated SidebarMenuSkeleton uses Math.random() in render, violating react-hooks/purity ESLint rule
 - **Fix:** Replaced random width with fixed "70%" string since skeleton is a placeholder
-- **Files modified:** dashboard/src/components/ui/sidebar.tsx
+- **Files modified:** src/components/ui/sidebar.tsx
 - **Verification:** pnpm lint passes cleanly
 - **Committed in:** e591a4f (Task 2 commit)
 
