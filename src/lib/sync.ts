@@ -175,7 +175,7 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
     const forexRate = await fetchForexRate("USDGBP")
     await upsertSetting(
       "usd_gbp_rate",
-      String(forexRate.bid),
+      String(forexRate.price),
       "USD/GBP exchange rate",
     )
     await upsertSetting(

@@ -63,7 +63,7 @@ export async function fetchBatchQuotes(
     const batch = symbols.slice(i, i + BATCH_SIZE)
     const symbolStr = batch.join(",")
     const quotes = await fmpFetch<FMPQuote[]>(
-      `/api/v3/quote/${symbolStr}`,
+      `/stable/batch-quote?symbols=${symbolStr}`,
     )
     results.push(...quotes)
   }
@@ -80,7 +80,7 @@ export async function fetchBatchQuotes(
 export async function fetchForexRate(
   pair: string = "USDGBP",
 ): Promise<FMPForexQuote> {
-  const quotes = await fmpFetch<FMPForexQuote[]>(`/api/v3/fx/${pair}`)
+  const quotes = await fmpFetch<FMPForexQuote[]>(`/stable/quote?symbol=${pair}`)
 
   if (quotes.length === 0) {
     throw new Error(`FMP: no forex data returned for pair ${pair}`)
@@ -100,7 +100,7 @@ export async function fetchKeyMetricsTTM(
 ): Promise<FMPKeyMetricsTTM | null> {
   try {
     const metrics = await fmpFetch<FMPKeyMetricsTTM[]>(
-      `/api/v3/key-metrics-ttm/${symbol}`,
+      `/stable/key-metrics-ttm?symbol=${symbol}`,
     )
     return metrics.length > 0 ? metrics[0] : null
   } catch {

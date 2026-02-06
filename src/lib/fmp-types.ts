@@ -6,7 +6,7 @@
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// Quote -- GET /api/v3/quote/{symbols}
+// Quote -- GET /stable/batch-quote?symbols={symbols}
 // ---------------------------------------------------------------------------
 
 /** Single stock quote from the FMP batch quote endpoint. */
@@ -36,23 +36,30 @@ export interface FMPQuote {
 }
 
 // ---------------------------------------------------------------------------
-// Forex -- GET /api/v3/fx/{pair}
+// Forex -- GET /stable/quote?symbol={pair}
 // ---------------------------------------------------------------------------
 
-/** Single forex pair quote from the FMP forex endpoint. */
+/** Single forex pair quote from the FMP stable quote endpoint. */
 export interface FMPForexQuote {
-  ticker: string
-  bid: number
-  ask: number
+  symbol: string
+  price: number
+  change: number
+  changePercentage: number
+  previousClose: number
+  dayLow: number
+  dayHigh: number
+  yearLow: number
+  yearHigh: number
+  volume: number
   open: number
-  low: number
-  high: number
-  changes: number
-  date: string
+  priceAvg50: number
+  priceAvg200: number
+  timestamp: number
+  exchange: string
 }
 
 // ---------------------------------------------------------------------------
-// Key Metrics TTM -- GET /api/v3/key-metrics-ttm/{symbol}
+// Key Metrics TTM -- GET /stable/key-metrics-ttm?symbol={symbol}
 // ---------------------------------------------------------------------------
 
 /**
