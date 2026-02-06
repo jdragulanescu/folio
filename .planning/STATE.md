@@ -78,6 +78,12 @@ Recent decisions affecting current work:
 - Gap: FX rate handling for historical transactions -- using single daily rate for MVP, historical rates deferred
 - Gap: Options accounting policy (premium reduces cost basis vs separate income) -- decision needed in Phase 6
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Fix FMP legacy endpoint 403 — migrate to stable API | 2026-02-06 | 4c5fbe3 | [001-fix-fmp-legacy-endpoint-403-migrate-to-s](./quick/001-fix-fmp-legacy-endpoint-403-migrate-to-s/) |
+
 ## Session Continuity
 
 Last session: 2026-02-06
