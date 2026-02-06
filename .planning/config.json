@@ -1,0 +1,20 @@
+{
+  "mode": "yolo",
+  "depth": "comprehensive",
+  "parallelization": true,
+  "commit_docs": true,
+  "model_profile": "quality",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true
+  },
+  "quality": {
+    "typecheck_before_commit": true,
+    "lint_before_commit": true,
+    "typecheck_command": "pnpm typecheck",
+    "lint_command": "pnpm lint",
+    "code_review_after_coding": true,
+    "code_simplify_after_coding": true
+  }
+}
