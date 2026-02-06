@@ -134,74 +134,74 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| DATA-05 | TBD | Pending |
-| DATA-06 | TBD | Pending |
-| DATA-07 | TBD | Pending |
-| DATA-08 | TBD | Pending |
-| DATA-09 | TBD | Pending |
-| DATA-10 | TBD | Pending |
-| DATA-11 | TBD | Pending |
-| DATA-12 | TBD | Pending |
-| PORT-01 | TBD | Pending |
-| PORT-02 | TBD | Pending |
-| PORT-03 | TBD | Pending |
-| PORT-04 | TBD | Pending |
-| PORT-05 | TBD | Pending |
-| PORT-06 | TBD | Pending |
-| PORT-07 | TBD | Pending |
-| PORT-08 | TBD | Pending |
-| PORT-09 | TBD | Pending |
-| PORT-10 | TBD | Pending |
-| PORT-11 | TBD | Pending |
-| PORT-12 | TBD | Pending |
-| TRAN-01 | TBD | Pending |
-| TRAN-02 | TBD | Pending |
-| TRAN-03 | TBD | Pending |
-| TRAN-04 | TBD | Pending |
-| TRAN-05 | TBD | Pending |
-| TRAN-06 | TBD | Pending |
-| OPTS-01 | TBD | Pending |
-| OPTS-02 | TBD | Pending |
-| OPTS-03 | TBD | Pending |
-| OPTS-04 | TBD | Pending |
-| OPTS-05 | TBD | Pending |
-| OPTS-06 | TBD | Pending |
-| OPTS-07 | TBD | Pending |
-| OPTS-08 | TBD | Pending |
-| OPTS-09 | TBD | Pending |
-| OPTS-10 | TBD | Pending |
-| DIVD-01 | TBD | Pending |
-| DIVD-02 | TBD | Pending |
-| DIVD-03 | TBD | Pending |
-| DIVD-04 | TBD | Pending |
-| DIVD-05 | TBD | Pending |
-| DIVD-06 | TBD | Pending |
-| DIVD-07 | TBD | Pending |
-| DIVD-08 | TBD | Pending |
-| DEPS-01 | TBD | Pending |
-| DEPS-02 | TBD | Pending |
-| DEPS-03 | TBD | Pending |
-| DEPS-04 | TBD | Pending |
-| DEPS-05 | TBD | Pending |
-| PERF-01 | TBD | Pending |
-| PERF-02 | TBD | Pending |
-| PERF-03 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| UI-05 | TBD | Pending |
-| UI-06 | TBD | Pending |
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Pending |
+| DATA-07 | Phase 1 | Pending |
+| DATA-08 | Phase 1 | Pending |
+| DATA-09 | Phase 2 | Pending |
+| DATA-10 | Phase 2 | Pending |
+| DATA-11 | Phase 2 | Pending |
+| DATA-12 | Phase 1 | Pending |
+| PORT-01 | Phase 3 | Pending |
+| PORT-02 | Phase 3 | Pending |
+| PORT-03 | Phase 3 | Pending |
+| PORT-04 | Phase 3 | Pending |
+| PORT-05 | Phase 3 | Pending |
+| PORT-06 | Phase 3 | Pending |
+| PORT-07 | Phase 8 | Pending |
+| PORT-08 | Phase 8 | Pending |
+| PORT-09 | Phase 3 | Pending |
+| PORT-10 | Phase 3 | Pending |
+| PORT-11 | Phase 7 | Pending |
+| PORT-12 | Phase 3 | Pending |
+| TRAN-01 | Phase 4 | Pending |
+| TRAN-02 | Phase 4 | Pending |
+| TRAN-03 | Phase 4 | Pending |
+| TRAN-04 | Phase 4 | Pending |
+| TRAN-05 | Phase 6 | Pending |
+| TRAN-06 | Phase 6 | Pending |
+| OPTS-01 | Phase 4 | Pending |
+| OPTS-02 | Phase 4 | Pending |
+| OPTS-03 | Phase 4 | Pending |
+| OPTS-04 | Phase 4 | Pending |
+| OPTS-05 | Phase 4 | Pending |
+| OPTS-06 | Phase 4 | Pending |
+| OPTS-07 | Phase 4 | Pending |
+| OPTS-08 | Phase 6 | Pending |
+| OPTS-09 | Phase 6 | Pending |
+| OPTS-10 | Phase 8 | Pending |
+| DIVD-01 | Phase 5 | Pending |
+| DIVD-02 | Phase 5 | Pending |
+| DIVD-03 | Phase 5 | Pending |
+| DIVD-04 | Phase 5 | Pending |
+| DIVD-05 | Phase 5 | Pending |
+| DIVD-06 | Phase 8 | Pending |
+| DIVD-07 | Phase 5 | Pending |
+| DIVD-08 | Phase 6 | Pending |
+| DEPS-01 | Phase 5 | Pending |
+| DEPS-02 | Phase 5 | Pending |
+| DEPS-03 | Phase 5 | Pending |
+| DEPS-04 | Phase 5 | Pending |
+| DEPS-05 | Phase 6 | Pending |
+| PERF-01 | Phase 7 | Pending |
+| PERF-02 | Phase 7 | Pending |
+| PERF-03 | Phase 7 | Pending |
+| UI-01 | Phase 1 | Pending |
+| UI-02 | Phase 1 | Pending |
+| UI-03 | Phase 2 | Pending |
+| UI-04 | Phase 6 | Pending |
+| UI-05 | Phase 1 | Pending |
+| UI-06 | Phase 1 | Pending |
 
 **Coverage:**
-- v1 requirements: 56 total
-- Mapped to phases: 0
-- Unmapped: 56 ⚠️
+- v1 requirements: 62 total
+- Mapped to phases: 62
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-06*
-*Last updated: 2026-02-06 after initial definition*
+*Last updated: 2026-02-06 after roadmap creation*
