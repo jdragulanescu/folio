@@ -122,7 +122,7 @@ export class TiingoProvider implements PriceProvider {
       )
 
       const quotes = await this.tiingoFetch<TiingoIEXQuote[]>(
-        `${TIINGO_BASE}/iex/?tickers=${tickerStr}`,
+        `${TIINGO_BASE}/iex/${tickerStr}`,
       )
 
       log.debug(
@@ -178,7 +178,7 @@ export class TiingoProvider implements PriceProvider {
     )
 
     const quotes = await this.tiingoFetch<TiingoForexQuote[]>(
-      `${TIINGO_BASE}/tiingo/fx/top?tickers=${tiingoTicker}`,
+      `${TIINGO_BASE}/tiingo/fx/${tiingoTicker}/top`,
     )
 
     if (quotes.length === 0) {
