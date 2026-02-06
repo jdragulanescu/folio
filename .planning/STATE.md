@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 2 of 8 (Live Pricing & Core Calculations)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-06 -- Completed 02-03-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-06 -- Completed 02-02-PLAN.md (sync pipeline + sidebar UI)
 
-Progress: [██░░░░░░░░] 25%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 4min
-- Total execution time: 0.35 hours
+- Total execution time: 0.38 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 3/3 | 15min | 5min |
-| 02 | 2/3 | 6min | 3min |
+| 02 | 3/3 | 9min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (6min), 01-02 (4min), 02-01 (2min), 02-03 (4min)
+- Last 5 plans: 01-02 (4min), 01-03 (6min), 02-01 (2min), 02-03 (4min), 02-02 (3min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - [02-03]: Big.RM = roundHalfUp for financial rounding, Big.DP left at default 20
 - [02-03]: toDisplay() as sole Big-to-number conversion boundary
 - [02-03]: Same-day transactions: buys before sells (simplified HMRC same-day rule)
+- [02-02]: NDJSON streaming over SSE for sync progress (simpler, no EventSource needed)
+- [02-02]: Partial batch failure: log and continue, don't abort entire sync
+- [02-02]: Settings upsert pattern: query-then-create-or-update for first-run safety
+- [02-02]: Forex bid price stored for USD/GBP (conservative direction)
 
 ### Pending Todos
 
@@ -76,5 +80,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 02-03-PLAN.md (Section 104 calculations engine)
+Stopped at: Completed 02-02-PLAN.md (sync pipeline + sidebar UI) -- Phase 2 fully complete
 Resume file: None
