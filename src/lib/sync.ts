@@ -99,13 +99,13 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
     return
   }
 
-  // Build a map of ticker -> NocoDB row Id for bulk updates (case-insensitive)
+  // Build a map of ticker -> NocoDB row Id for bulk updates (normalized)
   const symbolMap = new Map<string, number>()
   for (const sym of symbols) {
-    symbolMap.set(sym.symbol.toUpperCase(), sym.Id)
+    symbolMap.set(sym.symbol.trim().toUpperCase(), sym.Id)
   }
 
-  const tickers = symbols.map((s) => s.symbol)
+  const tickers = symbols.map((s) => s.symbol.trim())
   const today = new Date().toISOString().split("T")[0]
   let updated = 0
   let failed = 0
@@ -132,10 +132,16 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
       const symbolUpdates: Array<Partial<SymbolRecord> & { Id: number }> = []
 
       for (const quote of quotes) {
-        const rowId = symbolMap.get(quote.symbol.toUpperCase())
+        const key = quote.symbol.trim().toUpperCase()
+        const rowId = symbolMap.get(key)
         if (rowId == null) {
           log.warn(
-            { symbol: quote.symbol },
+            {
+              symbol: quote.symbol,
+              key,
+              inMap: symbolMap.has(key),
+              mapSize: symbolMap.size,
+            },
             "quote returned for unknown symbol, skipping",
           )
           continue
