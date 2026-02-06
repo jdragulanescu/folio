@@ -161,6 +161,62 @@ export async function updateRecord<T>(
 }
 
 /**
+ * Bulk-create multiple records in a single API call.
+ *
+ * Posts an array of records to NocoDB. Returns empty array immediately
+ * if no records are provided (skips the API call).
+ */
+export async function createRecords<T>(
+  table: TableName,
+  records: Partial<T>[],
+): Promise<T[]> {
+  if (records.length === 0) return []
+
+  const tableId = TABLE_IDS[table]
+  return nocodbFetch<T[]>(`/api/v2/tables/${tableId}/records`, {
+    method: "POST",
+    body: JSON.stringify(records),
+  })
+}
+
+/** Maximum records per bulk update request (safe NocoDB batch size). */
+const BULK_UPDATE_BATCH_SIZE = 50
+
+/**
+ * Bulk-update multiple records in a single API call.
+ *
+ * Each record must include its `Id` field (NocoDB v2 requirement).
+ * Automatically batches in groups of 50 records per request to stay
+ * within safe NocoDB limits. Batches are sent sequentially and results
+ * are concatenated.
+ *
+ * Returns empty array immediately if no records are provided.
+ */
+export async function updateRecords<T>(
+  table: TableName,
+  records: Array<Partial<T> & { Id: number }>,
+): Promise<T[]> {
+  if (records.length === 0) return []
+
+  const tableId = TABLE_IDS[table]
+  const results: T[] = []
+
+  for (let i = 0; i < records.length; i += BULK_UPDATE_BATCH_SIZE) {
+    const batch = records.slice(i, i + BULK_UPDATE_BATCH_SIZE)
+    const batchResults = await nocodbFetch<T[]>(
+      `/api/v2/tables/${tableId}/records`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(batch),
+      },
+    )
+    results.push(...batchResults)
+  }
+
+  return results
+}
+
+/**
  * Fetch from multiple tables concurrently with type-safe results.
  *
  * Each fetcher is a function returning a Promise. Results are returned

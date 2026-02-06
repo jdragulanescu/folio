@@ -72,6 +72,7 @@ export interface SymbolRecord {
   name: string
   sector: string | null
   strategy: string | null
+  currency: "USD" | "GBP" | null
   current_price: number | null
   previous_close: number | null
   change_pct: number | null
@@ -85,6 +86,20 @@ export interface SymbolRecord {
   dividend_yield: number | null
   avg_volume: number | null
   last_price_update: string | null
+  // Extended fundamental metrics (populated from FMP key-metrics-ttm)
+  forward_pe: number | null
+  peg_ratio: number | null
+  dividend_yield_ttm: number | null
+  revenue_per_share: number | null
+  roe: number | null
+  roa: number | null
+  debt_to_equity: number | null
+  free_cash_flow_per_share: number | null
+  book_value_per_share: number | null
+  current_ratio: number | null
+  price_avg_50: number | null
+  price_avg_200: number | null
+  last_fundamentals_update: string | null
   CreatedAt?: string
   UpdatedAt?: string
 }
