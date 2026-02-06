@@ -3,7 +3,18 @@ import { runSync } from "@/lib/sync"
 
 const log = logger.child({ route: "POST /api/sync" })
 
+let syncing = false
+
 export async function POST() {
+  if (syncing) {
+    log.warn("sync already in progress, rejecting")
+    return Response.json(
+      { error: "Sync already in progress" },
+      { status: 409 },
+    )
+  }
+
+  syncing = true
   log.info("sync triggered")
   const encoder = new TextEncoder()
 
@@ -23,6 +34,7 @@ export async function POST() {
           ),
         )
       } finally {
+        syncing = false
         controller.close()
       }
     },
