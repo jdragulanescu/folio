@@ -66,13 +66,30 @@ export interface PortfolioResult {
   totals: PortfolioTotals
 }
 
+export interface SymbolInput {
+  transactions: TransactionInput[]
+  currentPrice: number
+  name: string
+  sector: string | null
+  strategy: string | null
+}
+
 // ---------------------------------------------------------------------------
-// Internal: Section 104 Pool State
+// Internal Types
 // ---------------------------------------------------------------------------
 
 interface PoolState {
   shares: Big
   totalCost: Big
+}
+
+function zeroTotals(): PortfolioTotals {
+  return {
+    totalMarketValue: new Big(0),
+    totalCost: new Big(0),
+    totalUnrealisedPnl: new Big(0),
+    totalRealisedPnl: new Big(0),
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -154,90 +171,44 @@ export function computeHolding(
 // ---------------------------------------------------------------------------
 
 export function computePortfolio(
-  holdings: Map<
-    string,
-    {
-      transactions: TransactionInput[]
-      currentPrice: number
-      name: string
-      sector: string | null
-      strategy: string | null
-    }
-  >,
+  holdings: Map<string, SymbolInput>,
 ): PortfolioResult {
   if (holdings.size === 0) {
-    return {
-      holdings: [],
-      totals: {
-        totalMarketValue: new Big(0),
-        totalCost: new Big(0),
-        totalUnrealisedPnl: new Big(0),
-        totalRealisedPnl: new Big(0),
-      },
-    }
+    return { holdings: [], totals: zeroTotals() }
   }
 
   // Step 1: Compute each holding
-  const computed: Array<{
-    symbol: string
-    name: string
-    sector: string | null
-    strategy: string | null
-    currentPrice: number
-    result: HoldingResult
-  }> = []
-
-  for (const [symbol, data] of holdings) {
-    const result = computeHolding(data.transactions, data.currentPrice)
-    computed.push({
-      symbol,
-      name: data.name,
-      sector: data.sector,
-      strategy: data.strategy,
-      currentPrice: data.currentPrice,
-      result,
-    })
-  }
+  const computed = [...holdings].map(([symbol, data]) => ({
+    symbol,
+    ...data,
+    result: computeHolding(data.transactions, data.currentPrice),
+  }))
 
   // Step 2: Calculate portfolio totals
-  let totalMarketValue = new Big(0)
-  let totalCost = new Big(0)
-  let totalUnrealisedPnl = new Big(0)
-  let totalRealisedPnl = new Big(0)
-
-  for (const h of computed) {
-    totalMarketValue = totalMarketValue.plus(h.result.marketValue)
-    totalCost = totalCost.plus(h.result.totalCost)
-    totalUnrealisedPnl = totalUnrealisedPnl.plus(h.result.unrealisedPnl)
-    totalRealisedPnl = totalRealisedPnl.plus(h.result.realisedPnl)
-  }
+  const totals = computed.reduce<PortfolioTotals>((acc, h) => {
+    acc.totalMarketValue = acc.totalMarketValue.plus(h.result.marketValue)
+    acc.totalCost = acc.totalCost.plus(h.result.totalCost)
+    acc.totalUnrealisedPnl = acc.totalUnrealisedPnl.plus(
+      h.result.unrealisedPnl,
+    )
+    acc.totalRealisedPnl = acc.totalRealisedPnl.plus(h.result.realisedPnl)
+    return acc
+  }, zeroTotals())
 
   // Step 3: Calculate weights (as percentage of total market value)
-  const portfolioHoldings: PortfolioHolding[] = computed.map((h) => {
-    const weight = totalMarketValue.gt(0)
-      ? h.result.marketValue.div(totalMarketValue).times(100)
-      : new Big(0)
+  const portfolioHoldings: PortfolioHolding[] = computed.map((h) => ({
+    symbol: h.symbol,
+    name: h.name,
+    sector: h.sector,
+    strategy: h.strategy,
+    currentPrice: new Big(h.currentPrice),
+    weight: totals.totalMarketValue.gt(0)
+      ? h.result.marketValue.div(totals.totalMarketValue).times(100)
+      : new Big(0),
+    ...h.result,
+  }))
 
-    return {
-      symbol: h.symbol,
-      name: h.name,
-      sector: h.sector,
-      strategy: h.strategy,
-      currentPrice: new Big(h.currentPrice),
-      weight,
-      ...h.result,
-    }
-  })
-
-  return {
-    holdings: portfolioHoldings,
-    totals: {
-      totalMarketValue,
-      totalCost,
-      totalUnrealisedPnl,
-      totalRealisedPnl,
-    },
-  }
+  return { holdings: portfolioHoldings, totals }
 }
 
 // ---------------------------------------------------------------------------
