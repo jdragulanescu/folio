@@ -223,6 +223,34 @@ export async function updateRecords<T>(
 }
 
 /**
+ * Bulk-delete records by their IDs.
+ *
+ * Accepts an array of row IDs and deletes them in batches of 50.
+ * Returns the total number of records deleted. Skips the API call
+ * if no IDs are provided.
+ */
+export async function deleteRecords(
+  table: TableName,
+  ids: number[],
+): Promise<number> {
+  if (ids.length === 0) return 0
+
+  const tableId = TABLE_IDS[table]
+  let deleted = 0
+
+  for (let i = 0; i < ids.length; i += BULK_UPDATE_BATCH_SIZE) {
+    const batch = ids.slice(i, i + BULK_UPDATE_BATCH_SIZE)
+    await nocodbFetch(`/api/v2/tables/${tableId}/records`, {
+      method: "DELETE",
+      body: JSON.stringify(batch.map((id) => ({ Id: id }))),
+    })
+    deleted += batch.length
+  }
+
+  return deleted
+}
+
+/**
  * Fetch from multiple tables concurrently with type-safe results.
  *
  * Each fetcher is a function returning a Promise. Results are returned

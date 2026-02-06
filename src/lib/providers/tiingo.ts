@@ -131,13 +131,16 @@ export class TiingoProvider implements PriceProvider {
       )
 
       for (const q of quotes) {
+        // tngoLast is Tiingo's consolidated last price (always available).
+        // last is IEX-only and null after market hours.
+        const price = q.tngoLast ?? q.last
         results.push({
           symbol: q.ticker,
-          price: q.last,
+          price,
           previousClose: q.prevClose,
           changesPercentage:
             q.prevClose !== 0
-              ? ((q.last - q.prevClose) / q.prevClose) * 100
+              ? ((price - q.prevClose) / q.prevClose) * 100
               : 0,
           dayHigh: q.high,
           dayLow: q.low,

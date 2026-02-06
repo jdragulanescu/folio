@@ -116,10 +116,13 @@ def timedelta_to_days(value) -> int | None:
 # NocoDB Table Schemas (DATA-02)
 # ---------------------------------------------------------------------------
 
+ID_COLUMN = {"column_name": "Id", "title": "Id", "uidt": "ID", "dt": "int4", "pk": True, "ai": True, "rqd": True}
+
 TABLE_SCHEMAS = {
     "symbols": {
         "table_name": "symbols",
         "columns": [
+            ID_COLUMN,
             {"column_name": "symbol", "uidt": "SingleLineText"},
             {"column_name": "name", "uidt": "SingleLineText"},
             {
@@ -150,6 +153,7 @@ TABLE_SCHEMAS = {
     "transactions": {
         "table_name": "transactions",
         "columns": [
+            ID_COLUMN,
             {"column_name": "symbol", "uidt": "SingleLineText"},
             {"column_name": "name", "uidt": "SingleLineText"},
             {
@@ -172,6 +176,7 @@ TABLE_SCHEMAS = {
     "options": {
         "table_name": "options",
         "columns": [
+            ID_COLUMN,
             {"column_name": "ticker", "uidt": "SingleLineText"},
             {"column_name": "opened", "uidt": "Date"},
             {
@@ -218,6 +223,7 @@ TABLE_SCHEMAS = {
     "deposits": {
         "table_name": "deposits",
         "columns": [
+            ID_COLUMN,
             {"column_name": "month", "uidt": "Date"},
             {"column_name": "amount", "uidt": "Decimal"},
             {
@@ -230,6 +236,7 @@ TABLE_SCHEMAS = {
     "dividends": {
         "table_name": "dividends",
         "columns": [
+            ID_COLUMN,
             {"column_name": "symbol", "uidt": "SingleLineText"},
             {"column_name": "amount", "uidt": "Decimal"},
             {"column_name": "date", "uidt": "Date"},
@@ -243,6 +250,7 @@ TABLE_SCHEMAS = {
     "monthly_snapshots": {
         "table_name": "monthly_snapshots",
         "columns": [
+            ID_COLUMN,
             {"column_name": "month", "uidt": "Date"},
             {"column_name": "total_invested", "uidt": "Decimal"},
             {"column_name": "portfolio_value", "uidt": "Decimal"},
@@ -257,6 +265,7 @@ TABLE_SCHEMAS = {
     "price_history": {
         "table_name": "price_history",
         "columns": [
+            ID_COLUMN,
             {"column_name": "symbol", "uidt": "SingleLineText"},
             {"column_name": "date", "uidt": "Date"},
             {"column_name": "close_price", "uidt": "Decimal"},
@@ -266,6 +275,7 @@ TABLE_SCHEMAS = {
     "settings": {
         "table_name": "settings",
         "columns": [
+            ID_COLUMN,
             {"column_name": "key", "uidt": "SingleLineText"},
             {"column_name": "value", "uidt": "SingleLineText"},
             {"column_name": "description", "uidt": "SingleLineText"},

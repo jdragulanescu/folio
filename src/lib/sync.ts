@@ -110,6 +110,21 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
   let updated = 0
   let failed = 0
 
+  // Load symbols that already have a price_history row for today (skip on re-sync)
+  const existingHistory = await getAllRecords<PriceHistoryRecord>("price_history", {
+    where: `(date,eq,exactDate,${today})`,
+    fields: ["symbol"],
+  })
+  const historyExists = new Set(
+    existingHistory.map((r) => r.symbol.trim().toUpperCase()),
+  )
+  if (historyExists.size > 0) {
+    log.info(
+      { date: today, count: historyExists.size },
+      "price history already recorded for today, will skip existing",
+    )
+  }
+
   // Process symbols in batches of BATCH_SIZE
   const totalBatches = Math.ceil(tickers.length / BATCH_SIZE)
   log.info({ totalBatches, batchSize: BATCH_SIZE }, "processing quote batches")
@@ -174,15 +189,15 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
         await updateRecords("symbols", symbolUpdates)
       }
 
-      // Build price_history records
-      const historyRecords: Array<Partial<PriceHistoryRecord>> = quotes.map(
-        (quote) => ({
+      // Build price_history records (skip symbols already recorded today)
+      const historyRecords: Array<Partial<PriceHistoryRecord>> = quotes
+        .filter((q) => !historyExists.has(q.symbol.trim().toUpperCase()))
+        .map((quote) => ({
           symbol: quote.symbol,
           date: today,
           close_price: quote.price,
           volume: quote.volume,
-        }),
-      )
+        }))
 
       if (historyRecords.length > 0) {
         log.debug(
@@ -192,7 +207,7 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
         await createRecords("price_history", historyRecords)
       }
 
-      updated += quotes.length
+      updated += symbolUpdates.length
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown batch error"
