@@ -1,5 +1,6 @@
 import "server-only"
 
+import logger from "../logger"
 import type { ForexRate, PriceProvider, StockQuote } from "./types"
 
 // ============================================================================
@@ -57,6 +58,8 @@ const TIINGO_BASE = "https://api.tiingo.com"
 /** Maximum symbols per batch request (URL length safety). */
 const BATCH_SIZE = 30
 
+const log = logger.child({ provider: "tiingo" })
+
 // ---------------------------------------------------------------------------
 // Provider Implementation
 // ---------------------------------------------------------------------------
@@ -79,6 +82,8 @@ export class TiingoProvider implements PriceProvider {
   // -------------------------------------------------------------------------
 
   private async tiingoFetch<T>(url: string): Promise<T> {
+    log.debug({ url }, "fetching")
+
     const response = await fetch(url, {
       cache: "no-store",
       headers: {
@@ -89,6 +94,7 @@ export class TiingoProvider implements PriceProvider {
 
     if (!response.ok) {
       const text = await response.text()
+      log.error({ url, status: response.status, body: text }, "request failed")
       throw new Error(`Tiingo ${response.status}: ${text}`)
     }
 
@@ -102,13 +108,26 @@ export class TiingoProvider implements PriceProvider {
   async fetchBatchQuotes(symbols: string[]): Promise<StockQuote[]> {
     if (symbols.length === 0) return []
 
+    log.info({ count: symbols.length }, "fetching batch quotes")
     const results: StockQuote[] = []
 
     for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
       const batch = symbols.slice(i, i + BATCH_SIZE)
       const tickerStr = batch.join(",")
+      const batchIndex = Math.floor(i / BATCH_SIZE)
+
+      log.debug(
+        { batch: batchIndex, tickers: tickerStr },
+        "fetching IEX batch",
+      )
+
       const quotes = await this.tiingoFetch<TiingoIEXQuote[]>(
         `${TIINGO_BASE}/iex/?tickers=${tickerStr}`,
+      )
+
+      log.debug(
+        { batch: batchIndex, returned: quotes.length, requested: batch.length },
+        "IEX batch response",
       )
 
       for (const q of quotes) {
@@ -135,6 +154,7 @@ export class TiingoProvider implements PriceProvider {
       }
     }
 
+    log.info({ total: results.length }, "batch quotes complete")
     return results
   }
 
@@ -143,17 +163,49 @@ export class TiingoProvider implements PriceProvider {
   // -------------------------------------------------------------------------
 
   async fetchForexRate(pair: string = "USDGBP"): Promise<ForexRate> {
+    // Tiingo uses standard major pairs (e.g., "gbpusd"). If the caller
+    // requests "USDGBP" we need to fetch "gbpusd" and invert the rate.
+    const upper = pair.toUpperCase()
+    const base = upper.slice(0, 3)
+    const quote = upper.slice(3)
+    const reversed = `${quote}${base}`
+    const tiingoTicker = reversed.toLowerCase()
+    const needsInversion = true
+
+    log.info(
+      { pair: upper, tiingoTicker, inverted: needsInversion },
+      "fetching forex rate",
+    )
+
     const quotes = await this.tiingoFetch<TiingoForexQuote[]>(
-      `${TIINGO_BASE}/tiingo/fx/top?tickers=${pair.toLowerCase()}`,
+      `${TIINGO_BASE}/tiingo/fx/top?tickers=${tiingoTicker}`,
     )
 
     if (quotes.length === 0) {
-      throw new Error(`Tiingo: no forex data returned for pair ${pair}`)
+      log.error({ pair: upper, tiingoTicker }, "no forex data returned")
+      throw new Error(
+        `Tiingo: no forex data returned for pair ${upper} (ticker: ${tiingoTicker})`,
+      )
     }
 
+    const raw = quotes[0]
+    log.debug(
+      {
+        ticker: raw.ticker,
+        midPrice: raw.midPrice,
+        bidPrice: raw.bidPrice,
+        askPrice: raw.askPrice,
+      },
+      "forex raw response",
+    )
+
+    const rate = needsInversion ? 1 / raw.midPrice : raw.midPrice
+
+    log.info({ pair: upper, rate }, "forex rate resolved")
+
     return {
-      pair: pair.toUpperCase(),
-      rate: quotes[0].midPrice,
+      pair: upper,
+      rate,
     }
   }
 }

@@ -1,5 +1,6 @@
 import "server-only"
 
+import logger from "../logger"
 import type { ForexRate, PriceProvider, StockQuote } from "./types"
 
 // ============================================================================
@@ -67,6 +68,8 @@ const FMP_BASE = "https://financialmodelingprep.com"
 /** Maximum symbols per batch quote request (URL length safety). */
 const BATCH_SIZE = 30
 
+const log = logger.child({ provider: "fmp" })
+
 // ---------------------------------------------------------------------------
 // Provider Implementation
 // ---------------------------------------------------------------------------
@@ -90,10 +93,13 @@ export class FMPProvider implements PriceProvider {
     const separator = path.includes("?") ? "&" : "?"
     const url = `${FMP_BASE}${path}${separator}apikey=${this.apiKey}`
 
+    log.debug({ url }, "fetching")
+
     const response = await fetch(url, { cache: "no-store" })
 
     if (!response.ok) {
       const text = await response.text()
+      log.error({ url, status: response.status, body: text }, "request failed")
       throw new Error(`FMP ${response.status}: ${text}`)
     }
 
@@ -107,13 +113,23 @@ export class FMPProvider implements PriceProvider {
   async fetchBatchQuotes(symbols: string[]): Promise<StockQuote[]> {
     if (symbols.length === 0) return []
 
+    log.info({ count: symbols.length }, "fetching batch quotes")
     const results: StockQuote[] = []
 
     for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
       const batch = symbols.slice(i, i + BATCH_SIZE)
       const symbolStr = batch.join(",")
+      const batchIndex = Math.floor(i / BATCH_SIZE)
+
+      log.debug({ batch: batchIndex, symbols: symbolStr }, "fetching batch")
+
       const quotes = await this.fmpFetch<FMPQuote[]>(
         `/stable/batch-quote?symbols=${symbolStr}`,
+      )
+
+      log.debug(
+        { batch: batchIndex, returned: quotes.length, requested: batch.length },
+        "batch response",
       )
 
       for (const q of quotes) {
@@ -137,6 +153,7 @@ export class FMPProvider implements PriceProvider {
       }
     }
 
+    log.info({ total: results.length }, "batch quotes complete")
     return results
   }
 
@@ -145,17 +162,23 @@ export class FMPProvider implements PriceProvider {
   // -------------------------------------------------------------------------
 
   async fetchForexRate(pair: string = "USDGBP"): Promise<ForexRate> {
+    log.info({ pair }, "fetching forex rate")
+
     const quotes = await this.fmpFetch<FMPForexQuote[]>(
       `/stable/quote?symbol=${pair}`,
     )
 
     if (quotes.length === 0) {
+      log.error({ pair }, "no forex data returned")
       throw new Error(`FMP: no forex data returned for pair ${pair}`)
     }
 
+    const rate = quotes[0].price
+    log.info({ pair, rate }, "forex rate fetched")
+
     return {
       pair: pair.toUpperCase(),
-      rate: quotes[0].price,
+      rate,
     }
   }
 }

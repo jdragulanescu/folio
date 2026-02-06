@@ -1,5 +1,6 @@
 import "server-only"
 
+import logger from "./logger"
 import type {
   ListParams,
   NocoDBListResponse,
@@ -37,8 +38,12 @@ const TABLE_IDS: Record<TableName, string> = {
 
 const PAGE_SIZE = 200
 
+const log = logger.child({ module: "nocodb" })
+
 async function nocodbFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`
+
+  log.debug({ method: init?.method ?? "GET", path }, "request")
 
   const response = await fetch(url, {
     ...init,
@@ -52,6 +57,7 @@ async function nocodbFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const text = await response.text()
+    log.error({ path, status: response.status, body: text }, "request failed")
     throw new Error(`NocoDB ${response.status}: ${text}`)
   }
 

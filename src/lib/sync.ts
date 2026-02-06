@@ -1,5 +1,6 @@
 import "server-only"
 
+import logger from "./logger"
 import {
   createRecord,
   createRecords,
@@ -19,6 +20,8 @@ import type { PriceHistoryRecord, SettingRecord, SymbolRecord } from "./types"
 // update -> price_history insert -> forex rate -> last_synced timestamp.
 // Yields progress events as an async generator for streaming to the client.
 // ============================================================================
+
+const log = logger.child({ module: "sync" })
 
 // ---------------------------------------------------------------------------
 // Progress Event Types
@@ -80,12 +83,16 @@ async function upsertSetting(
  * Partial failures (individual batch errors) do not abort the entire sync.
  */
 export async function* runSync(): AsyncGenerator<SyncProgress> {
+  log.info("starting sync")
+
   const symbols = await getAllRecords<SymbolRecord>("symbols")
   const total = symbols.length
 
+  log.info({ total }, "symbols loaded from NocoDB")
   yield { type: "start", total }
 
   if (total === 0) {
+    log.warn("no symbols to sync")
     const timestamp = new Date().toISOString()
     await upsertSetting("last_synced", timestamp, "Last successful price sync")
     yield { type: "complete", timestamp, updated: 0, failed: 0 }
@@ -104,19 +111,35 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
   let failed = 0
 
   // Process symbols in batches of BATCH_SIZE
+  const totalBatches = Math.ceil(tickers.length / BATCH_SIZE)
+  log.info({ totalBatches, batchSize: BATCH_SIZE }, "processing quote batches")
+
   for (let i = 0; i < tickers.length; i += BATCH_SIZE) {
     const batchIndex = Math.floor(i / BATCH_SIZE)
     const batch = tickers.slice(i, i + BATCH_SIZE)
 
     try {
+      log.debug({ batch: batchIndex, symbols: batch }, "fetching batch quotes")
+
       const quotes: StockQuote[] = await provider.fetchBatchQuotes(batch)
+
+      log.debug(
+        { batch: batchIndex, returned: quotes.length, requested: batch.length },
+        "batch quotes received",
+      )
 
       // Build symbol update records
       const symbolUpdates: Array<Partial<SymbolRecord> & { Id: number }> = []
 
       for (const quote of quotes) {
         const rowId = symbolMap.get(quote.symbol)
-        if (rowId == null) continue
+        if (rowId == null) {
+          log.warn(
+            { symbol: quote.symbol },
+            "quote returned for unknown symbol, skipping",
+          )
+          continue
+        }
 
         symbolUpdates.push({
           Id: rowId,
@@ -138,6 +161,10 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
       }
 
       if (symbolUpdates.length > 0) {
+        log.debug(
+          { batch: batchIndex, count: symbolUpdates.length },
+          "updating symbols in NocoDB",
+        )
         await updateRecords("symbols", symbolUpdates)
       }
 
@@ -152,6 +179,10 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
       )
 
       if (historyRecords.length > 0) {
+        log.debug(
+          { batch: batchIndex, count: historyRecords.length },
+          "inserting price history",
+        )
         await createRecords("price_history", historyRecords)
       }
 
@@ -159,7 +190,10 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown batch error"
-      console.error(`Sync batch ${batchIndex} failed: ${message}`)
+      log.error(
+        { batch: batchIndex, symbols: batch, err: message },
+        "batch failed",
+      )
       failed += batch.length
     }
 
@@ -173,7 +207,10 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
 
   // Fetch and store USD/GBP forex rate
   try {
+    log.info("fetching forex rate")
     const forexRate = await provider.fetchForexRate("USDGBP")
+    log.info({ pair: forexRate.pair, rate: forexRate.rate }, "forex rate fetched")
+
     await upsertSetting(
       "usd_gbp_rate",
       String(forexRate.rate),
@@ -187,12 +224,13 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown forex error"
-    console.error(`Forex rate fetch failed: ${message}`)
+    log.error({ err: message }, "forex rate fetch failed")
   }
 
   // Update last_synced timestamp
   const timestamp = new Date().toISOString()
   await upsertSetting("last_synced", timestamp, "Last successful price sync")
 
+  log.info({ updated, failed, timestamp }, "sync complete")
   yield { type: "complete", timestamp, updated, failed }
 }

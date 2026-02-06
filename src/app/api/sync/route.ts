@@ -1,6 +1,10 @@
+import logger from "@/lib/logger"
 import { runSync } from "@/lib/sync"
 
+const log = logger.child({ route: "POST /api/sync" })
+
 export async function POST() {
+  log.info("sync triggered")
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -12,6 +16,7 @@ export async function POST() {
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Unknown sync error"
+        log.error({ err: message }, "sync stream error")
         controller.enqueue(
           encoder.encode(
             JSON.stringify({ type: "error", message } as const) + "\n",
