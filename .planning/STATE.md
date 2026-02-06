@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 2 of 8 (Live Pricing & Core Calculations)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-06 -- Completed 02-01-PLAN.md
+Last activity: 2026-02-06 -- Completed 02-03-PLAN.md
 
-Progress: [██░░░░░░░░] 18.75%
+Progress: [██░░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 4min
-- Total execution time: 0.28 hours
+- Total execution time: 0.35 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 3/3 | 15min | 5min |
-| 02 | 1/3 | 2min | 2min |
+| 02 | 2/3 | 6min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5min), 01-03 (6min), 01-02 (4min), 02-01 (2min)
-- Trend: improving
+- Last 5 plans: 01-03 (6min), 01-02 (4min), 02-01 (2min), 02-03 (4min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -59,10 +59,13 @@ Recent decisions affecting current work:
 - [02-01]: 30-symbol batch size for FMP quote requests (URL length safety)
 - [02-01]: 50-record batch size for NocoDB bulk updates (safe default)
 - [02-01]: Graceful null fallback for FMP key-metrics-ttm (free tier restrictions)
+- [02-03]: Big.RM = roundHalfUp for financial rounding, Big.DP left at default 20
+- [02-03]: toDisplay() as sole Big-to-number conversion boundary
+- [02-03]: Same-day transactions: buys before sells (simplified HMRC same-day rule)
 
 ### Pending Todos
 
-1. **Add capital gains tracking page for UK fiscal years** (area: ui) — `/tax` page showing realised gains per fiscal year for HMRC self-assessment
+1. **Add capital gains tracking page for UK fiscal years** (area: ui) -- `/tax` page showing realised gains per fiscal year for HMRC self-assessment
 
 ### Blockers/Concerns
 
@@ -73,5 +76,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 02-01-PLAN.md (FMP client & NocoDB bulk ops)
+Stopped at: Completed 02-03-PLAN.md (Section 104 calculations engine)
 Resume file: None
