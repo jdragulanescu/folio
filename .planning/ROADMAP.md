@@ -66,12 +66,12 @@ Plans:
   3. Summary cards display total portfolio value, total P&L, day change, total deposited, and options premium collected
   4. Sector and strategy allocation donut charts show the portfolio breakdown by sector and by investment strategy
   5. Top 5 gainers and top 5 losers cards are visible (by day change and overall P&L), and clicking a symbol row shows all transactions for that symbol
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 03-01: Portfolio page server component with parallel data fetching and holdings computation
-- [ ] 03-02: Holdings table client component (sortable, filterable, symbol detail drill-down)
-- [ ] 03-03: Summary cards, allocation charts, per-broker breakdown, and top movers
+- [ ] 03-01-PLAN.md — Install dependencies, data assembly layer (portfolio.ts + format.ts), and page shell (Wave 1)
+- [ ] 03-02-PLAN.md — Holdings table with TanStack Table (sort, filter, column visibility) and symbol detail page (Wave 2, depends on 03-01)
+- [ ] 03-03-PLAN.md — Summary cards, allocation donut charts, top movers, and broker breakdown (Wave 2, depends on 03-01)
 
 ### Phase 4: Transactions & Options Display
 **Goal**: Users can browse full transaction history and the complete options dashboard with Wheel and LEAPS views (read-only)
