@@ -59,7 +59,8 @@ describe("computeHolding", () => {
     // avgCost = 1700 / 150 = 11.333...
     expect(Number(result.avgCost.toFixed(2))).toBe(11.33)
     expect(result.marketValue).toEqual(new Big(1800))
-    expect(result.unrealisedPnl).toEqual(new Big(100))
+    // unrealisedPnl = (12 - 11.333...) * 150 = 100 (with tiny residual from division)
+    expect(Number(result.unrealisedPnl.toFixed(2))).toBe(100.0)
     expect(result.realisedPnl).toEqual(new Big(0))
   })
 
