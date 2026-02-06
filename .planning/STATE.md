@@ -58,7 +58,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+1. **Add capital gains tracking page for UK fiscal years** (area: ui) — `/tax` page showing realised gains per fiscal year for HMRC self-assessment
 
 ### Blockers/Concerns
 
