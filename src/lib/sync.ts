@@ -99,10 +99,10 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
     return
   }
 
-  // Build a map of ticker -> NocoDB row Id for bulk updates
+  // Build a map of ticker -> NocoDB row Id for bulk updates (case-insensitive)
   const symbolMap = new Map<string, number>()
   for (const sym of symbols) {
-    symbolMap.set(sym.symbol, sym.Id)
+    symbolMap.set(sym.symbol.toUpperCase(), sym.Id)
   }
 
   const tickers = symbols.map((s) => s.symbol)
@@ -132,7 +132,7 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
       const symbolUpdates: Array<Partial<SymbolRecord> & { Id: number }> = []
 
       for (const quote of quotes) {
-        const rowId = symbolMap.get(quote.symbol)
+        const rowId = symbolMap.get(quote.symbol.toUpperCase())
         if (rowId == null) {
           log.warn(
             { symbol: quote.symbol },
