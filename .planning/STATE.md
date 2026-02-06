@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 2 of 8 (Live Pricing & Core Calculations)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-02-06 -- Phase 1 complete (3/3 plans, verified)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-06 -- Completed 02-01-PLAN.md
 
-Progress: [█░░░░░░░░░] 12.5%
+Progress: [██░░░░░░░░] 18.75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 5min
-- Total execution time: 0.25 hours
+- Total plans completed: 4
+- Average duration: 4min
+- Total execution time: 0.28 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 3/3 | 15min | 5min |
+| 02 | 1/3 | 2min | 2min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5min), 01-03 (6min), 01-02 (4min)
-- Trend: stable
+- Last 5 plans: 01-01 (5min), 01-03 (6min), 01-02 (4min), 02-01 (2min)
+- Trend: improving
 
 *Updated after each plan completion*
 
@@ -55,6 +56,9 @@ Recent decisions affecting current work:
 - [01-03]: Dynamic header mapping for spreadsheet column detection
 - [01-03]: Null platform passed through (98 transactions)
 - [01-03]: Sector data from 'Table 1' in Portfolio sheet, not Sectors-1
+- [02-01]: 30-symbol batch size for FMP quote requests (URL length safety)
+- [02-01]: 50-record batch size for NocoDB bulk updates (safe default)
+- [02-01]: Graceful null fallback for FMP key-metrics-ttm (free tier restrictions)
 
 ### Pending Todos
 
@@ -69,5 +73,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Phase 1 complete, ready for Phase 2 planning
+Stopped at: Completed 02-01-PLAN.md (FMP client & NocoDB bulk ops)
 Resume file: None
