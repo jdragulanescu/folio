@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 1 of 8 (Foundation & Data Migration)
-Plan: 1 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-06 -- Completed 01-01-PLAN.md (Next.js scaffold with dark theme and sidebar)
+Plan: 3 of 3 in current phase (all complete)
+Status: Phase 1 complete
+Last activity: 2026-02-06 -- Completed 01-02-PLAN.md (NocoDB typed client with server-only guard)
 
-Progress: [█░░░░░░░░░] ~5%
+Progress: [██░░░░░░░░] ~15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
+- Total plans completed: 3
 - Average duration: 5min
-- Total execution time: 0.08 hours
+- Total execution time: 0.25 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 1/3 | 5min | 5min |
+| 01 | 3/3 | 15min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5min)
-- Trend: baseline
+- Last 5 plans: 01-01 (5min), 01-03 (6min), 01-02 (4min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -48,6 +48,13 @@ Recent decisions affecting current work:
 - [01-01]: Restructured to src/ directory layout (create-next-app generated flat, plan expects src/)
 - [01-01]: Used &:where(.dark, .dark *) for dark mode custom variant
 - [01-01]: Portfolio page at root / rather than /portfolio
+- [01-02]: Custom REST client over nocodb-sdk for better control and no version lock
+- [01-02]: Record suffix on interfaces to distinguish raw DB rows from computed types
+- [01-02]: number | null for optional numerics (NocoDB returns null not undefined)
+- [01-02]: PAGE_SIZE 200 for auto-pagination, cache: "no-store" for fresh data
+- [01-03]: Dynamic header mapping for spreadsheet column detection
+- [01-03]: Null platform passed through (98 transactions)
+- [01-03]: Sector data from 'Table 1' in Portfolio sheet, not Sectors-1
 
 ### Pending Todos
 
@@ -61,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-06T18:47:19Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-02-06T19:12:32Z
+Stopped at: Completed 01-02-PLAN.md (Phase 1 complete)
 Resume file: None
