@@ -13,7 +13,7 @@ Folio replaces a manually-maintained Apple Numbers spreadsheet with a live inves
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Data Migration** - NocoDB client, Python migration script, project scaffolding with dark theme shell
-- [ ] **Phase 2: Live Pricing & Core Calculations** - FMP price sync, holdings calculation engine with Big.js, daily cron
+- [x] **Phase 2: Live Pricing & Core Calculations** - FMP price sync, holdings calculation engine with Big.js, daily cron
 - [ ] **Phase 3: Portfolio Overview** - Primary dashboard page with holdings table, summary cards, allocation charts, top movers
 - [ ] **Phase 4: Transactions & Options Display** - Transaction history and options dashboard (read-only views)
 - [ ] **Phase 5: Dividends & Deposits Display** - Dividend tracking page and deposits page (read-only views)
@@ -52,9 +52,9 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — FMP client library, FMP types, NocoDB bulk operations (Wave 1)
-- [ ] 02-02-PLAN.md — Sync route handler with streaming, SWR hooks, sidebar Sync Now button + last-synced (Wave 2, depends on 02-01)
-- [ ] 02-03-PLAN.md — Calculations engine (Section 104 pool, P&L, weights) with Big.js via TDD (Wave 1)
+- [x] 02-01-PLAN.md — FMP client library, FMP types, NocoDB bulk operations (Wave 1)
+- [x] 02-02-PLAN.md — Sync route handler with streaming, SWR hooks, sidebar Sync Now button + last-synced (Wave 2, depends on 02-01)
+- [x] 02-03-PLAN.md — Calculations engine (Section 104 pool, P&L, weights) with Big.js via TDD (Wave 1)
 
 ### Phase 3: Portfolio Overview
 **Goal**: The primary dashboard page shows all current holdings with live prices, P&L, allocation breakdowns, and top movers
@@ -164,7 +164,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
-| 2. Live Pricing & Core Calculations | 0/3 | Planned | - |
+| 2. Live Pricing & Core Calculations | 3/3 | ✓ Complete | 2026-02-06 |
 | 3. Portfolio Overview | 0/3 | Not started | - |
 | 4. Transactions & Options Display | 0/4 | Not started | - |
 | 5. Dividends & Deposits Display | 0/2 | Not started | - |

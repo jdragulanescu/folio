@@ -17,9 +17,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DATA-06**: Migration imports both Wheel (164 rows) and LEAPS (36 rows) options into a single options table with strategy_type distinction
 - [x] **DATA-07**: Migration prints summary of imported record counts and validates against expected totals
 - [x] **DATA-08**: Typed NocoDB REST client in TypeScript with parallel fetching, auto-pagination, and server-only import guard
-- [ ] **DATA-09**: FMP price sync updates all symbols with current price, change%, day high/low, year high/low, PE, EPS, market cap, dividend yield
-- [ ] **DATA-10**: FMP sync inserts daily close prices into price_history table
-- [ ] **DATA-11**: FMP sync runs via daily cron (9pm UK, after US market close) and via manual "Sync Now" button in UI
+- [x] **DATA-09**: FMP price sync updates all symbols with current price, change%, day high/low, year high/low, PE, EPS, market cap, dividend yield
+- [x] **DATA-10**: FMP sync inserts daily close prices into price_history table
+- [x] **DATA-11**: FMP sync runs via daily cron (9pm UK, after US market close) and via manual "Sync Now" button in UI
 - [x] **DATA-12**: Brokers marked as active (IBKR, Trading 212, Robinhood) or archived (Freetrade, Stake, eToro) in settings or symbols
 
 ### Portfolio Overview
@@ -88,7 +88,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **UI-01**: Dark theme by default (dark navy/charcoal, finance-standard green gains / red losses)
 - [x] **UI-02**: Sidebar navigation: Portfolio, Transactions, Options, Dividends, Deposits, Performance
-- [ ] **UI-03**: Last synced timestamp and "Sync Now" button in sidebar
+- [x] **UI-03**: Last synced timestamp and "Sync Now" button in sidebar
 - [ ] **UI-04**: Active vs archived broker distinction visible in UI (archived brokers greyed or labelled)
 - [x] **UI-05**: Responsive layout: desktop-first, tables horizontally scrollable on mobile, cards stack vertically
 - [x] **UI-06**: Sidebar collapses to hamburger on mobile
@@ -142,9 +142,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-06 | Phase 1 | Complete |
 | DATA-07 | Phase 1 | Complete |
 | DATA-08 | Phase 1 | Complete |
-| DATA-09 | Phase 2 | Pending |
-| DATA-10 | Phase 2 | Pending |
-| DATA-11 | Phase 2 | Pending |
+| DATA-09 | Phase 2 | Complete |
+| DATA-10 | Phase 2 | Complete |
+| DATA-11 | Phase 2 | Complete |
 | DATA-12 | Phase 1 | Complete |
 | PORT-01 | Phase 3 | Pending |
 | PORT-02 | Phase 3 | Pending |
@@ -192,7 +192,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-03 | Phase 7 | Pending |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
-| UI-03 | Phase 2 | Pending |
+| UI-03 | Phase 2 | Complete |
 | UI-04 | Phase 6 | Pending |
 | UI-05 | Phase 1 | Complete |
 | UI-06 | Phase 1 | Complete |
@@ -204,4 +204,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-06*
-*Last updated: 2026-02-06 after Phase 1 completion*
+*Last updated: 2026-02-06 after Phase 2 completion*
