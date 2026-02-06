@@ -83,13 +83,13 @@ Plans:
   3. The options dashboard shows Wheel, LEAPS, and All tabs with stat cards (total premium, capital gains P&L, win rate, avg days held)
   4. Wheel open positions highlight rows where expiration is within 7 days (amber) or past due (red), and closed positions show profit, return%, and annualised return%
   5. The LEAPS table shows current price, days to expiry, premium paid, current P&L, delta, and IV% for each position
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 04-01: Transaction history page with sortable/filterable/paginated table
-- [ ] 04-02: Options dashboard page with Wheel/LEAPS/All tabs and stat cards
-- [ ] 04-03: Wheel open/closed tables with expiry highlighting and LEAPS tracker table
-- [ ] 04-04: Monthly premium bar chart (Wheel vs LEAPS grouped by month)
+- [ ] 04-01-PLAN.md — Install dependencies, data assembly layer (transactions.ts, options.ts, format.ts), Server Action (Wave 1)
+- [ ] 04-02-PLAN.md — Transaction history page with sortable/filterable table and infinite scroll (Wave 2, depends on 04-01)
+- [ ] 04-03-PLAN.md — Options dashboard with tabs, stat cards, Wheel/LEAPS/All tables, roll chains, expiry highlighting (Wave 2, depends on 04-01)
+- [ ] 04-04-PLAN.md — Monthly premium bar chart with year selector and summary chart (Wave 3, depends on 04-03)
 
 ### Phase 5: Dividends & Deposits Display
 **Goal**: Users can view dividend income tracking and deposit history with charts and breakdowns (read-only)
@@ -166,7 +166,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 | 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
 | 2. Live Pricing & Core Calculations | 3/3 | ✓ Complete | 2026-02-06 |
 | 3. Portfolio Overview | 0/3 | Not started | - |
-| 4. Transactions & Options Display | 0/4 | Not started | - |
+| 4. Transactions & Options Display | 0/4 | Planned | - |
 | 5. Dividends & Deposits Display | 0/2 | Not started | - |
 | 6. Write Operations | 0/4 | Not started | - |
 | 7. Performance Analytics | 0/2 | Not started | - |
