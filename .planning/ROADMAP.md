@@ -49,12 +49,12 @@ Plans:
   2. Daily close prices are recorded in the price_history table after each sync
   3. The sidebar displays a "Last synced" timestamp and a "Sync Now" button that triggers a manual FMP refresh via the /api/sync route handler
   4. The calculations library computes holdings (shares, avg cost basis, P&L, weight) using Big.js decimal arithmetic with results matching broker statements to the penny
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01: FMP client library and Python sync script with batch quote fetching and price_history insertion
-- [ ] 02-02: /api/sync route handler, Sync Now button, last-synced indicator in sidebar
-- [ ] 02-03: Calculations library (holdings aggregation, P&L, cost basis, allocations) with Big.js decimal arithmetic
+- [ ] 02-01-PLAN.md — FMP client library, FMP types, NocoDB bulk operations (Wave 1)
+- [ ] 02-02-PLAN.md — Sync route handler with streaming, SWR hooks, sidebar Sync Now button + last-synced (Wave 2, depends on 02-01)
+- [ ] 02-03-PLAN.md — Calculations engine (Section 104 pool, P&L, weights) with Big.js via TDD (Wave 1)
 
 ### Phase 3: Portfolio Overview
 **Goal**: The primary dashboard page shows all current holdings with live prices, P&L, allocation breakdowns, and top movers
@@ -164,7 +164,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
-| 2. Live Pricing & Core Calculations | 0/3 | Not started | - |
+| 2. Live Pricing & Core Calculations | 0/3 | Planned | - |
 | 3. Portfolio Overview | 0/3 | Not started | - |
 | 4. Transactions & Options Display | 0/4 | Not started | - |
 | 5. Dividends & Deposits Display | 0/2 | Not started | - |
