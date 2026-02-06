@@ -12,7 +12,7 @@ Folio replaces a manually-maintained Apple Numbers spreadsheet with a live inves
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Data Migration** - NocoDB client, Python migration script, project scaffolding with dark theme shell
+- [x] **Phase 1: Foundation & Data Migration** - NocoDB client, Python migration script, project scaffolding with dark theme shell
 - [ ] **Phase 2: Live Pricing & Core Calculations** - FMP price sync, holdings calculation engine with Big.js, daily cron
 - [ ] **Phase 3: Portfolio Overview** - Primary dashboard page with holdings table, summary cards, allocation charts, top movers
 - [ ] **Phase 4: Transactions & Options Display** - Transaction history and options dashboard (read-only views)
@@ -36,9 +36,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Next.js project scaffolding with dark theme, sidebar layout, and responsive shell (Wave 1)
-- [ ] 01-02-PLAN.md — NocoDB TypeScript REST client with typed functions, server-only guard, parallel fetch, and auto-pagination (Wave 2, depends on 01-01)
-- [ ] 01-03-PLAN.md — Python migration script: read .numbers file, create tables, import all data with validation (Wave 1)
+- [x] 01-01-PLAN.md — Next.js project scaffolding with dark theme, sidebar layout, and responsive shell (Wave 1)
+- [x] 01-02-PLAN.md — NocoDB TypeScript REST client with typed functions, server-only guard, parallel fetch, and auto-pagination (Wave 2, depends on 01-01)
+- [x] 01-03-PLAN.md — Python migration script: read .numbers file, create tables, import all data with validation (Wave 1)
 
 ### Phase 2: Live Pricing & Core Calculations
 **Goal**: Symbols have current prices from FMP and the holdings calculation engine produces accurate P&L using decimal arithmetic
@@ -163,7 +163,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Data Migration | 0/3 | Planned (3 plans, 2 waves) | - |
+| 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
 | 2. Live Pricing & Core Calculations | 0/3 | Not started | - |
 | 3. Portfolio Overview | 0/3 | Not started | - |
 | 4. Transactions & Options Display | 0/4 | Not started | - |

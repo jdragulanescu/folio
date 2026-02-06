@@ -9,18 +9,18 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Foundation
 
-- [ ] **DATA-01**: Python migration script reads stocks-v2.numbers and imports all data into NocoDB (symbols, transactions, options, deposits, monthly snapshots, sector mappings)
-- [ ] **DATA-02**: Migration creates NocoDB tables programmatically via REST API if they don't exist
-- [ ] **DATA-03**: Migration unpivots deposit rows (one per platform per month) from the pivot format in the spreadsheet
-- [ ] **DATA-04**: Migration normalises platform names (Etoro → eToro, Hood → Robinhood)
-- [ ] **DATA-05**: Migration extracts unique symbols from transactions and populates symbols table with sector and strategy
-- [ ] **DATA-06**: Migration imports both Wheel (164 rows) and LEAPS (36 rows) options into a single options table with strategy_type distinction
-- [ ] **DATA-07**: Migration prints summary of imported record counts and validates against expected totals
-- [ ] **DATA-08**: Typed NocoDB REST client in TypeScript with parallel fetching, auto-pagination, and server-only import guard
+- [x] **DATA-01**: Python migration script reads stocks-v2.numbers and imports all data into NocoDB (symbols, transactions, options, deposits, monthly snapshots, sector mappings)
+- [x] **DATA-02**: Migration creates NocoDB tables programmatically via REST API if they don't exist
+- [x] **DATA-03**: Migration unpivots deposit rows (one per platform per month) from the pivot format in the spreadsheet
+- [x] **DATA-04**: Migration normalises platform names (Etoro → eToro, Hood → Robinhood)
+- [x] **DATA-05**: Migration extracts unique symbols from transactions and populates symbols table with sector and strategy
+- [x] **DATA-06**: Migration imports both Wheel (164 rows) and LEAPS (36 rows) options into a single options table with strategy_type distinction
+- [x] **DATA-07**: Migration prints summary of imported record counts and validates against expected totals
+- [x] **DATA-08**: Typed NocoDB REST client in TypeScript with parallel fetching, auto-pagination, and server-only import guard
 - [ ] **DATA-09**: FMP price sync updates all symbols with current price, change%, day high/low, year high/low, PE, EPS, market cap, dividend yield
 - [ ] **DATA-10**: FMP sync inserts daily close prices into price_history table
 - [ ] **DATA-11**: FMP sync runs via daily cron (9pm UK, after US market close) and via manual "Sync Now" button in UI
-- [ ] **DATA-12**: Brokers marked as active (IBKR, Trading 212, Robinhood) or archived (Freetrade, Stake, eToro) in settings or symbols
+- [x] **DATA-12**: Brokers marked as active (IBKR, Trading 212, Robinhood) or archived (Freetrade, Stake, eToro) in settings or symbols
 
 ### Portfolio Overview
 
@@ -86,12 +86,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### UI & Layout
 
-- [ ] **UI-01**: Dark theme by default (dark navy/charcoal, finance-standard green gains / red losses)
-- [ ] **UI-02**: Sidebar navigation: Portfolio, Transactions, Options, Dividends, Deposits, Performance
+- [x] **UI-01**: Dark theme by default (dark navy/charcoal, finance-standard green gains / red losses)
+- [x] **UI-02**: Sidebar navigation: Portfolio, Transactions, Options, Dividends, Deposits, Performance
 - [ ] **UI-03**: Last synced timestamp and "Sync Now" button in sidebar
 - [ ] **UI-04**: Active vs archived broker distinction visible in UI (archived brokers greyed or labelled)
-- [ ] **UI-05**: Responsive layout: desktop-first, tables horizontally scrollable on mobile, cards stack vertically
-- [ ] **UI-06**: Sidebar collapses to hamburger on mobile
+- [x] **UI-05**: Responsive layout: desktop-first, tables horizontally scrollable on mobile, cards stack vertically
+- [x] **UI-06**: Sidebar collapses to hamburger on mobile
 
 ## v2 Requirements
 
@@ -134,18 +134,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| DATA-05 | Phase 1 | Pending |
-| DATA-06 | Phase 1 | Pending |
-| DATA-07 | Phase 1 | Pending |
-| DATA-08 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
+| DATA-05 | Phase 1 | Complete |
+| DATA-06 | Phase 1 | Complete |
+| DATA-07 | Phase 1 | Complete |
+| DATA-08 | Phase 1 | Complete |
 | DATA-09 | Phase 2 | Pending |
 | DATA-10 | Phase 2 | Pending |
 | DATA-11 | Phase 2 | Pending |
-| DATA-12 | Phase 1 | Pending |
+| DATA-12 | Phase 1 | Complete |
 | PORT-01 | Phase 3 | Pending |
 | PORT-02 | Phase 3 | Pending |
 | PORT-03 | Phase 3 | Pending |
@@ -190,12 +190,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-01 | Phase 7 | Pending |
 | PERF-02 | Phase 7 | Pending |
 | PERF-03 | Phase 7 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
+| UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 2 | Pending |
 | UI-04 | Phase 6 | Pending |
-| UI-05 | Phase 1 | Pending |
-| UI-06 | Phase 1 | Pending |
+| UI-05 | Phase 1 | Complete |
+| UI-06 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 62 total
@@ -204,4 +204,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-06*
-*Last updated: 2026-02-06 after roadmap creation*
+*Last updated: 2026-02-06 after Phase 1 completion*

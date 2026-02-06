@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** One place to see the full portfolio -- stocks and bought options together with live prices -- without manually maintaining a spreadsheet.
-**Current focus:** Phase 1 - Foundation & Data Migration
+**Current focus:** Phase 2 - Live Pricing & Core Calculations
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation & Data Migration)
-Plan: 3 of 3 in current phase (all complete)
-Status: Phase 1 complete
-Last activity: 2026-02-06 -- Completed 01-02-PLAN.md (NocoDB typed client with server-only guard)
+Phase: 2 of 8 (Live Pricing & Core Calculations)
+Plan: 0 of 3 in current phase
+Status: Ready to plan
+Last activity: 2026-02-06 -- Phase 1 complete (3/3 plans, verified)
 
-Progress: [██░░░░░░░░] ~15%
+Progress: [█░░░░░░░░░] 12.5%
 
 ## Performance Metrics
 
@@ -68,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-06T19:12:32Z
-Stopped at: Completed 01-02-PLAN.md (Phase 1 complete)
+Last session: 2026-02-06
+Stopped at: Phase 1 complete, ready for Phase 2 planning
 Resume file: None
