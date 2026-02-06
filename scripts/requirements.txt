@@ -1,0 +1,4 @@
+# System dependency: brew install snappy (macOS) or apt-get install libsnappy-dev (Linux)
+numbers-parser>=4.18.0
+requests>=2.32.0
+python-dotenv>=1.0.0
