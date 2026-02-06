@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: 2 of 8 complete, ready for Phase 3
 Plan: 3 of 3 in Phase 2 (all complete)
 Status: Phase 2 verified, ready for Phase 3 planning
-Last activity: 2026-02-06 -- Quick task 001: FMP /api/v3/ to /stable/ migration
+Last activity: 2026-02-06 -- Quick task 002: Switch to Tiingo provider abstraction
 
 Progress: [███░░░░░░░] 30%
 
@@ -67,6 +67,10 @@ Recent decisions affecting current work:
 - [02-02]: Settings upsert pattern: query-then-create-or-update for first-run safety
 - [02-02]: Forex bid price stored for USD/GBP (conservative direction)
 - [quick-001]: FMP stable endpoint returns `price` field instead of `bid` for forex -- sync pipeline updated accordingly
+- [quick-002]: PriceProvider abstraction -- swap providers via single import change
+- [quick-002]: Tiingo midPrice for forex (bid/ask average), computed changesPercentage
+- [quick-002]: Tiingo IEX lacks yearHigh, yearLow, marketCap, pe, eps, avgVolume, priceAvg50, priceAvg200 -- all null
+- [quick-002]: FMP files kept as dormant code (fmp.ts, fmp-types.ts unchanged)
 
 ### Pending Todos
 
@@ -83,9 +87,10 @@ Recent decisions affecting current work:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 001 | Fix FMP legacy endpoint 403 — migrate to stable API | 2026-02-06 | 4c5fbe3 | [001-fix-fmp-legacy-endpoint-403-migrate-to-s](./quick/001-fix-fmp-legacy-endpoint-403-migrate-to-s/) |
+| 002 | Switch to Tiingo provider abstraction | 2026-02-06 | 9f388b2 | [002-switch-to-tiingo-provider-abstraction](./quick/002-switch-to-tiingo-provider-abstraction/) |
 
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Quick task 001 complete, ready for Phase 3 planning
+Stopped at: Quick task 002 complete, ready for Phase 3 planning
 Resume file: None
