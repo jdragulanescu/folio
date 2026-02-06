@@ -1,6 +1,5 @@
 import "server-only"
 
-import { fetchBatchQuotes, fetchForexRate } from "./fmp"
 import {
   createRecord,
   createRecords,
@@ -9,12 +8,14 @@ import {
   updateRecord,
   updateRecords,
 } from "./nocodb"
+import { provider } from "./providers"
+import type { StockQuote } from "./providers"
 import type { PriceHistoryRecord, SettingRecord, SymbolRecord } from "./types"
 
 // ============================================================================
 // Sync Orchestration
 // ============================================================================
-// Coordinates the full price-refresh pipeline: FMP fetch -> NocoDB symbol
+// Coordinates the full price-refresh pipeline: provider fetch -> NocoDB symbol
 // update -> price_history insert -> forex rate -> last_synced timestamp.
 // Yields progress events as an async generator for streaming to the client.
 // ============================================================================
@@ -33,7 +34,7 @@ export type SyncProgress =
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Symbols per FMP batch quote request (matches fmp.ts BATCH_SIZE). */
+/** Symbols per provider batch quote request (partial-failure boundary). */
 const BATCH_SIZE = 30
 
 // ---------------------------------------------------------------------------
@@ -71,7 +72,7 @@ async function upsertSetting(
  *
  * 1. Fetches all symbols from NocoDB
  * 2. Batches them into groups of 30
- * 3. For each batch: fetch FMP quotes, update symbols, insert price_history
+ * 3. For each batch: fetch quotes via provider, update symbols, insert price_history
  * 4. Fetches USD/GBP forex rate and stores in settings
  * 5. Updates "last_synced" timestamp in settings
  *
@@ -108,7 +109,7 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
     const batch = tickers.slice(i, i + BATCH_SIZE)
 
     try {
-      const quotes = await fetchBatchQuotes(batch)
+      const quotes: StockQuote[] = await provider.fetchBatchQuotes(batch)
 
       // Build symbol update records
       const symbolUpdates: Array<Partial<SymbolRecord> & { Id: number }> = []
@@ -172,10 +173,10 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
 
   // Fetch and store USD/GBP forex rate
   try {
-    const forexRate = await fetchForexRate("USDGBP")
+    const forexRate = await provider.fetchForexRate("USDGBP")
     await upsertSetting(
       "usd_gbp_rate",
-      String(forexRate.price),
+      String(forexRate.rate),
       "USD/GBP exchange rate",
     )
     await upsertSetting(
