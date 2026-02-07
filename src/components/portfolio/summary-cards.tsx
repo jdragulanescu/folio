@@ -143,12 +143,14 @@ export function SummaryCards({ data }: SummaryCardsProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-              Options Premium
+              Options P&L
             </CardTitle>
-            <CircleDollarSign className="text-gain size-4" />
+            <CircleDollarSign className={`size-4 ${optionsPremium >= 0 ? "text-gain" : "text-loss"}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold tabular-nums text-gain">
+            <div
+              className={`text-xl font-bold tabular-nums ${pnlClassName(optionsPremium)}`}
+            >
               {fc(optionsPremium)}
             </div>
           </CardContent>
