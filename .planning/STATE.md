@@ -121,7 +121,7 @@ Recent decisions affecting current work:
 |---|-------------|------|--------|-----------|
 | 001 | Fix FMP legacy endpoint 403 — migrate to stable API | 2026-02-06 | 4c5fbe3 | [001-fix-fmp-legacy-endpoint-403-migrate-to-s](./quick/001-fix-fmp-legacy-endpoint-403-migrate-to-s/) |
 | 002 | Switch to Tiingo provider abstraction | 2026-02-06 | 9f388b2 | [002-switch-to-tiingo-provider-abstraction](./quick/002-switch-to-tiingo-provider-abstraction/) |
-| 003 | Fix portfolio calcs, currency selector, tests | 2026-02-07 | ad7bb43 | [003-fix-portfolio-calcs-currency-tests](./quick/003-fix-portfolio-calcs-currency-tests/) |
+| 003 | Fix portfolio calcs, currency selector, tests | 2026-02-07 | a4a0a05 | [003-fix-portfolio-calcs-currency-tests](./quick/003-fix-portfolio-calcs-currency-tests/) |
 
 ## Session Continuity
 
