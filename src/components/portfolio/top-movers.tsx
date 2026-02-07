@@ -4,7 +4,6 @@ import { useMemo } from "react"
 import Link from "next/link"
 import type { DisplayHolding } from "@/lib/portfolio"
 import { formatPercent, formatCurrency, pnlClassName } from "@/lib/format"
-import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import {
   Card,
   CardContent,
@@ -15,16 +14,10 @@ import { TrendingUp, TrendingDown } from "lucide-react"
 
 interface TopMoversProps {
   holdings: DisplayHolding[]
-  forexRate: number
 }
 
-export function TopMovers({ holdings, forexRate }: TopMoversProps) {
-  const [currency] = useCurrencyPreference()
-
-  const fc = (value: number) => {
-    const converted = currency === "GBP" ? value * forexRate : value
-    return formatCurrency(converted, currency)
-  }
+export function TopMovers({ holdings }: TopMoversProps) {
+  const fc = (value: number) => formatCurrency(value, "USD")
   const { gainers, losers } = useMemo(() => {
     const withChange = holdings.filter((h) => h.changePct != null)
 

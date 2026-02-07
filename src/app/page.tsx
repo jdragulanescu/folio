@@ -18,23 +18,25 @@ export default async function PortfolioPage() {
       <SummaryCards data={data} />
 
       {/* Holdings table - full width */}
-      <HoldingsTable holdings={data.holdings} forexRate={data.forexRate} />
+      <HoldingsTable holdings={data.holdings} />
+
+      {/* Broker breakdown & capital gains - side by side */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <BrokerBreakdown holdings={data.holdings} options={data.options} forexRate={data.forexRate} />
+        <CapitalGainsTable
+          transactions={data.transactions}
+          options={data.options}
+          forexRate={data.forexRate}
+        />
+      </div>
 
       {/* Charts grid - responsive 2-col or 3-col */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <WeightBarChart holdings={data.holdings} />
-        <AllocationCharts holdings={data.holdings} forexRate={data.forexRate} />
+        <AllocationCharts holdings={data.holdings} />
         <CostWeightChart holdings={data.holdings} />
         <EpsYieldChart holdings={data.holdings} />
-        <TopMovers holdings={data.holdings} forexRate={data.forexRate} />
-        <BrokerBreakdown holdings={data.holdings} options={data.options} forexRate={data.forexRate} />
-        <div className="md:col-span-2">
-          <CapitalGainsTable
-            transactions={data.transactions}
-            options={data.options}
-            forexRate={data.forexRate}
-          />
-        </div>
+        <TopMovers holdings={data.holdings} />
       </div>
     </div>
   )

@@ -63,15 +63,8 @@ const nullBottomSort: SortingFn<DisplayHolding> = (rowA, rowB, columnId) => {
 // Column Definitions Factory
 // ---------------------------------------------------------------------------
 
-export function getColumns(
-  currency: "USD" | "GBP",
-  forexRate: number,
-): ColumnDef<DisplayHolding>[] {
-  /** Format a USD value in the selected currency. */
-  const fc = (value: number) => {
-    const converted = currency === "GBP" ? value * forexRate : value
-    return formatCurrency(converted, currency)
-  }
+export function getColumns(): ColumnDef<DisplayHolding>[] {
+  const fc = (value: number) => formatCurrency(value, "USD")
 
   return [
     {

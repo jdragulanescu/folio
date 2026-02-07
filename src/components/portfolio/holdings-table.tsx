@@ -32,7 +32,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useColumnVisibility } from "@/hooks/use-column-visibility"
-import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import { getColumns } from "./holdings-columns"
 import type { DisplayHolding } from "@/lib/portfolio"
 
@@ -72,22 +71,17 @@ const COLUMN_LABELS: Record<string, string> = {
 
 interface HoldingsTableProps {
   holdings: DisplayHolding[]
-  forexRate: number
 }
 
-export function HoldingsTable({ holdings, forexRate }: HoldingsTableProps) {
+export function HoldingsTable({ holdings }: HoldingsTableProps) {
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([
     { id: "weight", desc: true },
   ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useColumnVisibility()
-  const [currency] = useCurrencyPreference()
 
-  const columns = useMemo(
-    () => getColumns(currency, forexRate),
-    [currency, forexRate],
-  )
+  const columns = useMemo(() => getColumns(), [])
 
   const table = useReactTable({
     data: holdings,

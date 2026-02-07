@@ -4,7 +4,6 @@ import { useMemo } from "react"
 import { Label, Pie, PieChart } from "recharts"
 import type { DisplayHolding } from "@/lib/portfolio"
 import { formatCompact } from "@/lib/format"
-import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import {
   ChartContainer,
   ChartTooltip,
@@ -35,7 +34,6 @@ const MIN_SLICE_PCT = 3
 
 interface AllocationChartsProps {
   holdings: DisplayHolding[]
-  forexRate: number
 }
 
 interface SliceData {
@@ -192,22 +190,17 @@ function AllocationDonut({
   )
 }
 
-export function AllocationCharts({ holdings, forexRate }: AllocationChartsProps) {
-  const [currency] = useCurrencyPreference()
-
+export function AllocationCharts({ holdings }: AllocationChartsProps) {
   return (
     <>
       <AllocationDonut
         title="Sector Allocation"
         holdings={holdings}
         field="sector"
-        centerLabel={(totalValue) => {
-          const converted = currency === "GBP" ? totalValue * forexRate : totalValue
-          return {
-            primary: formatCompact(converted, currency),
-            secondary: "Total Value",
-          }
-        }}
+        centerLabel={(totalValue) => ({
+          primary: formatCompact(totalValue, "USD"),
+          secondary: "Total Value",
+        })}
       />
       <AllocationDonut
         title="Strategy Allocation"
