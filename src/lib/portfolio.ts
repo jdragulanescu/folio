@@ -17,10 +17,12 @@ import {
   type TransactionInput,
 } from "./calculations"
 import { getAllRecords, fetchParallel } from "./nocodb"
+import { isLongStrategy } from "./options-shared"
 import type {
   SymbolRecord,
   TransactionRecord,
   DepositRecord,
+  DividendRecord,
   OptionRecord,
 } from "./types"
 
@@ -43,7 +45,6 @@ export interface DisplayHolding {
   marketValue: number
   unrealisedPnl: number
   unrealisedPnlPct: number
-  realisedPnl: number
   weight: number
   eps: number | null
   peRatio: number | null
@@ -68,6 +69,9 @@ export interface PortfolioData {
   optionsPremium: number
   dayChange: number
   dayChangePct: number
+  cashBalance: number
+  options: OptionRecord[]
+  transactions: TransactionRecord[]
 }
 
 // ---------------------------------------------------------------------------
@@ -112,12 +116,14 @@ function getPrimaryPlatform(
 
 export async function getPortfolioData(): Promise<PortfolioData> {
   // Step 1: Fetch all needed data in parallel
-  const [symbols, transactions, deposits, options] = await fetchParallel(
-    () => getAllRecords<SymbolRecord>("symbols"),
-    () => getAllRecords<TransactionRecord>("transactions"),
-    () => getAllRecords<DepositRecord>("deposits"),
-    () => getAllRecords<OptionRecord>("options"),
-  )
+  const [symbols, transactions, deposits, options, dividends] =
+    await fetchParallel(
+      () => getAllRecords<SymbolRecord>("symbols"),
+      () => getAllRecords<TransactionRecord>("transactions"),
+      () => getAllRecords<DepositRecord>("deposits"),
+      () => getAllRecords<OptionRecord>("options"),
+      () => getAllRecords<DividendRecord>("dividends"),
+    )
 
   // Step 2: Build symbol lookup map
   const symbolMap = new Map<string, SymbolRecord>()
@@ -134,7 +140,6 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   }
 
   // Step 4: Build SymbolInput map for computePortfolio
-  // Only include symbols with BOTH transactions AND a non-null current_price
   const holdingsInput = new Map<string, SymbolInput>()
 
   for (const [symbol, txList] of txBySymbol) {
@@ -176,9 +181,9 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     const shares = toDisplay(h.shares, 6)
     const avgCost = toDisplay(h.avgCost)
     const eps = symbolRecord.eps
-    const dividendYield = symbolRecord.dividend_yield_ttm ?? symbolRecord.dividend_yield
+    const dividendYield =
+      symbolRecord.dividend_yield_ttm ?? symbolRecord.dividend_yield
 
-    // Derived: annual dividend per share from yield
     const annualDivPerShare =
       dividendYield != null && currentPrice > 0
         ? (dividendYield / 100) * currentPrice
@@ -199,8 +204,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
       marketValue: toDisplay(h.marketValue),
       unrealisedPnl,
       unrealisedPnlPct: Number(unrealisedPnlPct.toFixed(2)),
-      realisedPnl: toDisplay(h.realisedPnl),
-      weight: toDisplay(h.weight),
+      weight: 0, // recalculated below after adding options + cash
       eps,
       peRatio: symbolRecord.pe_ratio,
       totalEarnings: eps != null ? Number((eps * shares).toFixed(2)) : null,
@@ -208,8 +212,12 @@ export async function getPortfolioData(): Promise<PortfolioData> {
         eps != null && currentPrice > 0
           ? Number(((eps / currentPrice) * 100).toFixed(2))
           : null,
-      annualDividend: annualDivPerShare != null ? Number(annualDivPerShare.toFixed(4)) : null,
-      dividendYield: dividendYield != null ? Number(dividendYield.toFixed(2)) : null,
+      annualDividend:
+        annualDivPerShare != null
+          ? Number(annualDivPerShare.toFixed(4))
+          : null,
+      dividendYield:
+        dividendYield != null ? Number(dividendYield.toFixed(2)) : null,
       yieldOnCost:
         annualDivPerShare != null && avgCost > 0
           ? Number(((annualDivPerShare / avgCost) * 100).toFixed(2))
@@ -222,15 +230,143 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     }
   })
 
-  // Step 7: Compute totals (convert Big.js to numbers)
-  const totals = {
+  // Step 7: Add open long options as portfolio holdings
+  const openLongOptions = options.filter(
+    (o) => o.status === "Open" && o.buy_sell === "Buy",
+  )
+  for (const opt of openLongOptions) {
+    const symbolRecord = symbolMap.get(opt.ticker)
+    const costBasis = opt.premium * opt.qty * 100
+    const suffix = isLongStrategy(opt.strategy_type)
+      ? ` (${opt.strategy_type})`
+      : " (Option)"
+
+    displayHoldings.push({
+      symbol: opt.ticker,
+      name: (symbolRecord?.name ?? opt.ticker) + suffix,
+      sector: symbolRecord?.sector ?? null,
+      strategy: opt.strategy_type,
+      platform: opt.platform ?? "IBKR",
+      currentPrice: symbolRecord?.current_price ?? 0,
+      previousClose: null,
+      changePct: null,
+      shares: opt.qty,
+      avgCost: opt.premium * 100,
+      totalCost: costBasis,
+      marketValue: costBasis, // no free options pricing
+      unrealisedPnl: 0,
+      unrealisedPnlPct: 0,
+      weight: 0, // recalculated below
+      eps: null,
+      peRatio: null,
+      totalEarnings: null,
+      earningsYield: null,
+      annualDividend: null,
+      dividendYield: null,
+      yieldOnCost: null,
+      annualIncome: null,
+      beta: null,
+    })
+  }
+
+  // Step 8: Compute totals (convert Big.js to numbers)
+  const baseTotals = {
     totalMarketValue: toDisplay(result.totals.totalMarketValue),
     totalCost: toDisplay(result.totals.totalCost),
     totalUnrealisedPnl: toDisplay(result.totals.totalUnrealisedPnl),
     totalRealisedPnl: toDisplay(result.totals.totalRealisedPnl),
   }
 
-  // Step 8: Compute day change at portfolio level
+  // Add long option cost basis to totals
+  const longOptionsCost = openLongOptions.reduce(
+    (sum, o) => sum + o.premium * o.qty * 100,
+    0,
+  )
+  baseTotals.totalMarketValue += longOptionsCost
+  baseTotals.totalCost += longOptionsCost
+
+  // Step 9: Calculate cash balance
+  let cashBalance = 0
+  // + deposits
+  for (const d of deposits) {
+    cashBalance += d.amount
+  }
+  // +/- stock transactions
+  for (const tx of transactions) {
+    if (tx.type === "Buy") {
+      cashBalance -= tx.amount
+    } else {
+      cashBalance += tx.amount
+    }
+  }
+  // + dividends
+  for (const div of dividends) {
+    cashBalance += div.amount
+  }
+  // + sold option premiums (credit × qty × 100)
+  for (const o of options) {
+    if (o.buy_sell === "Sell") {
+      cashBalance += o.premium * o.qty * 100
+      // - closing cost if closed
+      if (o.close_premium != null) {
+        cashBalance -= o.close_premium * o.qty * 100
+      }
+    } else {
+      // bought options: cost to open
+      cashBalance -= o.premium * o.qty * 100
+      // + closing proceeds if closed
+      if (o.close_premium != null) {
+        cashBalance += o.close_premium * o.qty * 100
+      }
+    }
+  }
+  cashBalance = Number(cashBalance.toFixed(2))
+
+  // Add cash to total market value for weight calculation
+  const totalMarketValueWithCash =
+    baseTotals.totalMarketValue + Math.max(0, cashBalance)
+
+  // Add cash as a holding entry
+  if (cashBalance !== 0) {
+    displayHoldings.push({
+      symbol: "CASH",
+      name: "Cash",
+      sector: null,
+      strategy: null,
+      platform: null,
+      currentPrice: cashBalance,
+      previousClose: null,
+      changePct: null,
+      shares: 1,
+      avgCost: cashBalance,
+      totalCost: cashBalance,
+      marketValue: cashBalance,
+      unrealisedPnl: 0,
+      unrealisedPnlPct: 0,
+      weight: 0, // recalculated below
+      eps: null,
+      peRatio: null,
+      totalEarnings: null,
+      earningsYield: null,
+      annualDividend: null,
+      dividendYield: null,
+      yieldOnCost: null,
+      annualIncome: null,
+      beta: null,
+    })
+  }
+
+  // Step 10: Recalculate weights for all holdings (stocks + options + cash)
+  for (const h of displayHoldings) {
+    h.weight =
+      totalMarketValueWithCash !== 0
+        ? Number(
+            ((h.marketValue / totalMarketValueWithCash) * 100).toFixed(2),
+          )
+        : 0
+  }
+
+  // Step 11: Compute day change at portfolio level
   let dayChange = 0
   for (const h of displayHoldings) {
     if (h.changePct != null) {
@@ -238,30 +374,38 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     }
   }
   const dayChangePct =
-    totals.totalMarketValue !== 0
-      ? (dayChange / totals.totalMarketValue) * 100
+    totalMarketValueWithCash !== 0
+      ? (dayChange / totalMarketValueWithCash) * 100
       : 0
 
-  // Step 9: Compute total deposited
+  // Step 12: Compute total deposited
   let totalDeposited = 0
   for (const d of deposits) {
     totalDeposited += d.amount
   }
 
-  // Step 10: Compute options premium (premium received from selling)
+  // Step 13: Compute options premium (premium received from selling × qty × 100)
   let optionsPremium = 0
   for (const o of options) {
     if (o.buy_sell === "Sell") {
-      optionsPremium += o.premium
+      optionsPremium += o.premium * o.qty * 100
     }
   }
 
   return {
     holdings: displayHoldings,
-    totals,
+    totals: {
+      totalMarketValue: Number(totalMarketValueWithCash.toFixed(2)),
+      totalCost: Number(baseTotals.totalCost.toFixed(2)),
+      totalUnrealisedPnl: Number(baseTotals.totalUnrealisedPnl.toFixed(2)),
+      totalRealisedPnl: Number(baseTotals.totalRealisedPnl.toFixed(2)),
+    },
     totalDeposited: Number(totalDeposited.toFixed(2)),
     optionsPremium: Number(optionsPremium.toFixed(2)),
     dayChange: Number(dayChange.toFixed(2)),
     dayChangePct: Number(dayChangePct.toFixed(2)),
+    cashBalance,
+    options,
+    transactions,
   }
 }
