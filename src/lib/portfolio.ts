@@ -60,7 +60,9 @@ export interface DisplayHolding {
 }
 
 export interface CashBreakdown {
+  depositsGbp: number
   depositsUsd: number
+  fxPnl: number
   stockBuys: number
   stockSells: number
   dividends: number
@@ -314,15 +316,19 @@ export async function getPortfolioData(): Promise<PortfolioData> {
 
   // Step 10: Calculate cash balance (all values converted to USD)
   // Track each component for debugging/display
-  let cbDeposits = 0
+  let cbDepositsGbp = 0
+  let cbDepositsUsd = 0
   let cbBuys = 0
   let cbSells = 0
   let cbDividends = 0
 
-  // + deposits: use historical USD amount when available, fall back to current rate
+  // + deposits: raw GBP sum + historical USD conversion
   for (const d of deposits) {
-    cbDeposits += d.amount_usd ?? d.amount / usdGbpRate
+    cbDepositsGbp += d.amount
+    cbDepositsUsd += d.amount_usd ?? d.amount / usdGbpRate
   }
+  // FX P&L: difference between historical USD and current-rate USD
+  const cbFxPnl = cbDepositsUsd - cbDepositsGbp / usdGbpRate
   // +/- stock transactions (buys/sells from transactions table only, no option capital gains)
   for (const tx of transactions) {
     const amount = tx.shares * tx.price
@@ -339,10 +345,12 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   // Options net: uses computeStats totalPnl (includes commissions)
   const cbOptions = optionsPremium
   const cashBalance = Number(
-    (cbDeposits - cbBuys + cbSells + cbDividends + cbOptions).toFixed(2),
+    (cbDepositsUsd - cbBuys + cbSells + cbDividends + cbOptions).toFixed(2),
   )
   const cashBreakdown: CashBreakdown = {
-    depositsUsd: Number(cbDeposits.toFixed(2)),
+    depositsGbp: Number(cbDepositsGbp.toFixed(2)),
+    depositsUsd: Number(cbDepositsUsd.toFixed(2)),
+    fxPnl: Number(cbFxPnl.toFixed(2)),
     stockBuys: Number(cbBuys.toFixed(2)),
     stockSells: Number(cbSells.toFixed(2)),
     dividends: Number(cbDividends.toFixed(2)),
@@ -406,11 +414,8 @@ export async function getPortfolioData(): Promise<PortfolioData> {
       ? (dayChange / totalMarketValueWithCash) * 100
       : 0
 
-  // Step 12: Compute total deposited (use historical USD when available)
-  let totalDeposited = 0
-  for (const d of deposits) {
-    totalDeposited += d.amount_usd ?? d.amount / usdGbpRate
-  }
+  // Step 12: Total deposited is the raw GBP sum
+  const totalDeposited = cbDepositsGbp
 
   return {
     holdings: displayHoldings,

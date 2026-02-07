@@ -28,8 +28,15 @@ export function SummaryCards({ data }: SummaryCardsProps) {
     data
   const [currency, setCurrency] = useCurrencyPreference()
 
+  // Convert USD value to display currency
   const fc = (value: number) => {
     const converted = currency === "GBP" ? value * data.forexRate : value
+    return formatCurrency(converted, currency)
+  }
+
+  // Convert GBP value to display currency (for deposits which are natively GBP)
+  const fcGbp = (value: number) => {
+    const converted = currency === "USD" ? value / data.forexRate : value
     return formatCurrency(converted, currency)
   }
 
@@ -135,7 +142,7 @@ export function SummaryCards({ data }: SummaryCardsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold tabular-nums">
-              {fc(totalDeposited)}
+              {fcGbp(totalDeposited)}
             </div>
           </CardContent>
         </Card>
@@ -174,7 +181,13 @@ export function SummaryCards({ data }: SummaryCardsProps) {
             <div className="text-muted-foreground mt-2 space-y-0.5 text-[10px] tabular-nums">
               <div className="flex justify-between">
                 <span>Deposits</span>
-                <span className="text-foreground">+{fc(data.cashBreakdown.depositsUsd)}</span>
+                <span className="text-foreground">+{fcGbp(data.cashBreakdown.depositsGbp)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>FX P&L</span>
+                <span className={pnlClassName(data.cashBreakdown.fxPnl)}>
+                  {data.cashBreakdown.fxPnl >= 0 ? "+" : ""}{fc(data.cashBreakdown.fxPnl)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Buys</span>
