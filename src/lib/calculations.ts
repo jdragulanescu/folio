@@ -221,3 +221,110 @@ export function computePortfolio(
 export function toDisplay(value: Big, dp: number = 2): number {
   return Number(value.toFixed(dp))
 }
+
+// ---------------------------------------------------------------------------
+// getFiscalYear
+// ---------------------------------------------------------------------------
+// UK fiscal year runs 6 Apr to 5 Apr.
+// e.g. 10 Jan 2025 -> "2024/25", 10 May 2025 -> "2025/26"
+// ---------------------------------------------------------------------------
+
+export function getFiscalYear(dateStr: string): string {
+  const d = new Date(dateStr)
+  const month = d.getMonth() // 0-indexed
+  const day = d.getDate()
+  const year = d.getFullYear()
+
+  // Before 6 April -> previous fiscal year
+  if (month < 3 || (month === 3 && day <= 5)) {
+    return `${year - 1}/${String(year).slice(2)}`
+  }
+  return `${year}/${String(year + 1).slice(2)}`
+}
+
+// ---------------------------------------------------------------------------
+// computeRealisedGainsByFiscalYear
+// ---------------------------------------------------------------------------
+// Per-sale P&L grouped by UK fiscal year, computed via Section 104 pool.
+// ---------------------------------------------------------------------------
+
+export interface FiscalYearGains {
+  fiscalYear: string
+  sellCount: number
+  totalProceeds: Big
+  totalCostBasis: Big
+  realisedPnl: Big
+}
+
+export function computeRealisedGainsByFiscalYear(
+  transactionsBySymbol: Map<string, TransactionInput[]>,
+): FiscalYearGains[] {
+  const byFy = new Map<
+    string,
+    { sellCount: number; totalProceeds: Big; totalCostBasis: Big; realisedPnl: Big }
+  >()
+
+  for (const [, transactions] of transactionsBySymbol) {
+    // Sort: date ascending, buys before sells on same day
+    const sorted = [...transactions].sort((a, b) => {
+      const dateCompare =
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      if (dateCompare !== 0) return dateCompare
+      if (a.type === "Buy" && b.type === "Sell") return -1
+      if (a.type === "Sell" && b.type === "Buy") return 1
+      return 0
+    })
+
+    let pool: { shares: Big; totalCost: Big } = {
+      shares: new Big(0),
+      totalCost: new Big(0),
+    }
+
+    for (const tx of sorted) {
+      const txShares = new Big(tx.shares)
+      const txAmount = new Big(tx.amount)
+
+      if (tx.type === "Buy") {
+        pool.shares = pool.shares.plus(txShares)
+        pool.totalCost = pool.totalCost.plus(txAmount)
+      } else {
+        // Sell: compute per-sale P&L
+        if (pool.shares.eq(0)) continue
+
+        const avgCost = pool.totalCost.div(pool.shares)
+        const costOfSold = avgCost.times(txShares)
+        const pnl = txAmount.minus(costOfSold)
+
+        const fy = getFiscalYear(tx.date)
+        const existing = byFy.get(fy) ?? {
+          sellCount: 0,
+          totalProceeds: new Big(0),
+          totalCostBasis: new Big(0),
+          realisedPnl: new Big(0),
+        }
+        existing.sellCount += 1
+        existing.totalProceeds = existing.totalProceeds.plus(txAmount)
+        existing.totalCostBasis = existing.totalCostBasis.plus(costOfSold)
+        existing.realisedPnl = existing.realisedPnl.plus(pnl)
+        byFy.set(fy, existing)
+
+        pool.shares = pool.shares.minus(txShares)
+        pool.totalCost = pool.totalCost.minus(costOfSold)
+
+        if (pool.shares.lte(0)) {
+          pool = { shares: new Big(0), totalCost: new Big(0) }
+        }
+      }
+    }
+  }
+
+  return [...byFy.entries()]
+    .map(([fiscalYear, data]) => ({
+      fiscalYear,
+      sellCount: data.sellCount,
+      totalProceeds: data.totalProceeds,
+      totalCostBasis: data.totalCostBasis,
+      realisedPnl: data.realisedPnl,
+    }))
+    .sort((a, b) => b.fiscalYear.localeCompare(a.fiscalYear))
+}

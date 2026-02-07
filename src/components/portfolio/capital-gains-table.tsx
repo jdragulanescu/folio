@@ -9,55 +9,47 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, pnlClassName } from "@/lib/format"
-import type { DisplayHolding } from "@/lib/portfolio"
+import {
+  computeRealisedGainsByFiscalYear,
+  toDisplay,
+  type TransactionInput,
+} from "@/lib/calculations"
 import type { TransactionRecord } from "@/lib/types"
 
 interface CapitalGainsTableProps {
-  holdings: DisplayHolding[]
   transactions: TransactionRecord[]
-}
-
-/**
- * Get the UK fiscal year label for a given date.
- * UK fiscal year runs 6 Apr to 5 Apr.
- * e.g. 10 Jan 2025 → "2024/25", 10 May 2025 → "2025/26"
- */
-function getFiscalYear(dateStr: string): string {
-  const d = new Date(dateStr)
-  const month = d.getMonth() // 0-indexed
-  const day = d.getDate()
-  const year = d.getFullYear()
-
-  // Before 6 April → previous fiscal year
-  if (month < 3 || (month === 3 && day <= 5)) {
-    return `${year - 1}/${String(year).slice(2)}`
-  }
-  return `${year}/${String(year + 1).slice(2)}`
+  forexRate: number
 }
 
 export function CapitalGainsTable({
   transactions,
+  forexRate: _forexRate,
 }: CapitalGainsTableProps) {
   const fiscalYears = useMemo(() => {
-    // Group sell transactions by fiscal year
-    const sellTxs = transactions.filter((tx) => tx.type === "Sell")
-
-    const byFy = new Map<string, { sellCount: number; totalAmount: number }>()
-    for (const tx of sellTxs) {
-      const fy = getFiscalYear(tx.date)
-      const existing = byFy.get(fy) ?? { sellCount: 0, totalAmount: 0 }
-      existing.sellCount += 1
-      existing.totalAmount += tx.amount
-      byFy.set(fy, existing)
+    // Group transactions by symbol
+    const txBySymbol = new Map<string, TransactionInput[]>()
+    for (const tx of transactions) {
+      const existing = txBySymbol.get(tx.symbol) ?? []
+      existing.push({
+        type: tx.type,
+        shares: tx.shares,
+        price: tx.price,
+        amount: tx.amount,
+        date: tx.date,
+      })
+      txBySymbol.set(tx.symbol, existing)
     }
 
-    return [...byFy.entries()]
-      .map(([year, data]) => ({
-        year,
-        sellCount: data.sellCount,
-        totalProceeds: data.totalAmount,
-      }))
-      .sort((a, b) => b.year.localeCompare(a.year))
+    // Compute realised gains by fiscal year
+    const gains = computeRealisedGainsByFiscalYear(txBySymbol)
+
+    return gains.map((g) => ({
+      fiscalYear: g.fiscalYear,
+      sellCount: g.sellCount,
+      totalProceeds: toDisplay(g.totalProceeds),
+      totalCostBasis: toDisplay(g.totalCostBasis),
+      realisedPnl: toDisplay(g.realisedPnl),
+    }))
   }, [transactions])
 
   if (fiscalYears.length === 0) return null
@@ -66,7 +58,7 @@ export function CapitalGainsTable({
     <Card>
       <CardHeader>
         <CardTitle className="text-sm font-medium">
-          Sales by Fiscal Year
+          Capital Gains by Fiscal Year
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -77,19 +69,33 @@ export function CapitalGainsTable({
                 <th className="pb-2 text-xs font-medium">Fiscal Year</th>
                 <th className="pb-2 text-right text-xs font-medium">Sales</th>
                 <th className="pb-2 text-right text-xs font-medium">
-                  Total Proceeds
+                  Proceeds
+                </th>
+                <th className="pb-2 text-right text-xs font-medium">
+                  Cost Basis
+                </th>
+                <th className="pb-2 text-right text-xs font-medium">
+                  Realised P&L
                 </th>
               </tr>
             </thead>
             <tbody>
               {fiscalYears.map((fy) => (
-                <tr key={fy.year} className="border-b last:border-0">
-                  <td className="py-2 font-medium">{fy.year}</td>
+                <tr key={fy.fiscalYear} className="border-b last:border-0">
+                  <td className="py-2 font-medium">{fy.fiscalYear}</td>
                   <td className="py-2 text-right tabular-nums">
                     {fy.sellCount}
                   </td>
-                  <td className={`py-2 text-right tabular-nums ${pnlClassName(fy.totalProceeds)}`}>
+                  <td className="py-2 text-right tabular-nums">
                     {formatCurrency(fy.totalProceeds)}
+                  </td>
+                  <td className="py-2 text-right tabular-nums">
+                    {formatCurrency(fy.totalCostBasis)}
+                  </td>
+                  <td
+                    className={`py-2 text-right tabular-nums ${pnlClassName(fy.realisedPnl)}`}
+                  >
+                    {formatCurrency(fy.realisedPnl)}
                   </td>
                 </tr>
               ))}

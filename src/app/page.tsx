@@ -29,8 +29,8 @@ export default async function PortfolioPage() {
         <TopMovers holdings={data.holdings} />
         <BrokerBreakdown holdings={data.holdings} options={data.options} />
         <CapitalGainsTable
-          holdings={data.holdings}
           transactions={data.transactions}
+          forexRate={data.forexRate}
         />
       </div>
     </div>
