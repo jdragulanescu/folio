@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 3 & 4 of 8 (Portfolio Overview + Transactions & Options Display)
-Plan: 04-01 complete (1 of 4 in Phase 4), 03-01 complete (1 of 3 in Phase 3)
+Plan: 04-02 complete (2 of 4 in Phase 4), 03-01 complete (1 of 3 in Phase 3)
 Status: In progress
-Last activity: 2026-02-07 -- Completed 04-01-PLAN.md (dependencies, data assembly, formatting)
+Last activity: 2026-02-07 -- Completed 04-02-PLAN.md (transactions table UI)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 56%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 4min
-- Total execution time: 0.48 hours
+- Total execution time: 0.55 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [█████░░░░░] 50%
 | 01 | 3/3 | 15min | 5min |
 | 02 | 3/3 | 9min | 3min |
 | 03 | 1/3 | 3min | 3min |
-| 04 | 1/4 | 4min | 4min |
+| 04 | 2/4 | 8min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (2min), 02-03 (4min), 02-02 (3min), 03-01 (3min), 04-01 (4min)
+- Last 5 plans: 02-03 (4min), 02-02 (3min), 03-01 (3min), 04-01 (4min), 04-02 (4min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -82,6 +82,9 @@ Recent decisions affecting current work:
 - [04-01]: Premium chart groups by opened date month (when premium was received/paid)
 - [04-01]: LEAPS P&L from underlying stock intrinsic value (no free options pricing API)
 - [04-01]: avgDaysHeld excludes options with null days_held for accuracy
+- [04-02]: Radix Select uses "all" sentinel value (empty string not supported as item value)
+- [04-02]: Symbol input debounce is local-only (React compiler prohibits setState in useEffect)
+- [04-02]: ToggleGroup uses "all" default value for visual highlighting
 
 ### Pending Todos
 
@@ -103,5 +106,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed 04-01-PLAN.md (dependencies, data assembly, formatting)
+Stopped at: Completed 04-02-PLAN.md (transactions table UI)
 Resume file: None
