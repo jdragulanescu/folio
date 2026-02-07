@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: 4 of 8 complete (Phases 1-4 done), ready for Phase 5
 Plan: 4 of 4 in Phase 4 (all complete, verified 31/31 must-haves)
 Status: Phase 4 verified and complete
-Last activity: 2026-02-07 -- Quick task 004: fix calculations consistency (negative sells, deposits, options P&L)
+Last activity: 2026-02-07 -- Quick task 005: full test coverage for format.ts, sync.ts, portfolio.ts (178 tests)
 
 Progress: [██████░░░░] 54%
 
@@ -107,6 +107,8 @@ Recent decisions affecting current work:
 - [quick-004]: ALL deposits are GBP -- removed isUsBroker branching for deposits
 - [quick-004]: Math.abs() on all transaction amounts to handle negative sells from spreadsheet migration
 - [quick-004]: Options P&L uses computeProfit() from options-shared for consistency across pages
+- [quick-005]: Exported pure helpers from sync.ts and portfolio.ts for testability (no behavior change)
+- [quick-005]: server-only mock pattern: vi.mock before import, mock all transitive server deps
 
 ### Pending Todos
 
@@ -126,9 +128,10 @@ Recent decisions affecting current work:
 | 002 | Switch to Tiingo provider abstraction | 2026-02-06 | 9f388b2 | [002-switch-to-tiingo-provider-abstraction](./quick/002-switch-to-tiingo-provider-abstraction/) |
 | 003 | Fix portfolio calcs, currency selector, tests | 2026-02-07 | a4a0a05 | [003-fix-portfolio-calcs-currency-tests](./quick/003-fix-portfolio-calcs-currency-tests/) |
 | 004 | Fix calculations consistency (negative sells, deposits, options P&L) | 2026-02-07 | 96136b3 | [004-fix-calculations-consistency](./quick/004-fix-calculations-consistency/) |
+| 005 | Full test coverage for format.ts, sync.ts, portfolio.ts | 2026-02-07 | 3182318 | [005-full-test-coverage-frontend-and-backend](./quick/005-full-test-coverage-frontend-and-backend/) |
 
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed quick task 004 (fix calculations consistency)
+Stopped at: Completed quick task 005 (full test coverage)
 Resume file: None
