@@ -4,6 +4,12 @@ import {
   formatCompact,
   convertCurrency,
   formatShares,
+  formatPercent,
+  formatNumber,
+  formatDate,
+  formatDateShort,
+  daysToExpiry,
+  pnlClassName,
 } from "../format"
 
 // ============================================================================
@@ -93,5 +99,135 @@ describe("formatShares", () => {
     // Math.abs(99.9999 - 100) = 0.0001 which is NOT < 0.0001
     const result = formatShares(99.9999)
     expect(result).toContain("99.9999")
+  })
+})
+
+// ============================================================================
+// formatPercent
+// ============================================================================
+describe("formatPercent", () => {
+  it("positive value has + sign", () => {
+    expect(formatPercent(15.23)).toBe("+15.23%")
+  })
+
+  it("negative value has - sign", () => {
+    expect(formatPercent(-3.45)).toBe("-3.45%")
+  })
+
+  it("zero has no sign", () => {
+    expect(formatPercent(0)).toBe("0.00%")
+  })
+
+  it("large positive value", () => {
+    expect(formatPercent(100)).toBe("+100.00%")
+  })
+
+  it("tiny fractional rounds to 2dp", () => {
+    expect(formatPercent(0.001)).toBe("+0.00%")
+  })
+})
+
+// ============================================================================
+// formatNumber
+// ============================================================================
+describe("formatNumber", () => {
+  it("default 2dp with thousands separator", () => {
+    expect(formatNumber(1234.5)).toContain("1,234.50")
+  })
+
+  it("custom dp=0 rounds to integer", () => {
+    expect(formatNumber(1234.5, 0)).toContain("1,235")
+  })
+
+  it("custom dp=3", () => {
+    expect(formatNumber(0.12345, 3)).toContain("0.123")
+  })
+
+  it("zero", () => {
+    expect(formatNumber(0)).toContain("0.00")
+  })
+
+  it("large number with commas", () => {
+    expect(formatNumber(1000000)).toContain("1,000,000.00")
+  })
+})
+
+// ============================================================================
+// formatDate
+// ============================================================================
+describe("formatDate", () => {
+  it("formats standard ISO date", () => {
+    expect(formatDate("2025-01-15")).toBe("15 Jan 2025")
+  })
+
+  it("formats full ISO with time", () => {
+    expect(formatDate("2025-06-30T14:30:00.000Z")).toBe("30 Jun 2025")
+  })
+
+  it("December edge case", () => {
+    expect(formatDate("2024-12-31")).toBe("31 Dec 2024")
+  })
+})
+
+// ============================================================================
+// formatDateShort
+// ============================================================================
+describe("formatDateShort", () => {
+  it("formats standard date as dd/MM/yy", () => {
+    expect(formatDateShort("2025-01-15")).toBe("15/01/25")
+  })
+
+  it("formats full ISO as dd/MM/yy", () => {
+    expect(formatDateShort("2024-06-01T00:00:00.000Z")).toBe("01/06/24")
+  })
+})
+
+// ============================================================================
+// daysToExpiry
+// ============================================================================
+describe("daysToExpiry", () => {
+  it("non-open status Closed returns 0", () => {
+    expect(daysToExpiry("2099-01-01", "Closed")).toBe(0)
+  })
+
+  it("non-open status Expired returns 0", () => {
+    expect(daysToExpiry("2099-01-01", "Expired")).toBe(0)
+  })
+
+  it("Open status with future date returns positive", () => {
+    expect(daysToExpiry("2099-12-31", "Open")).toBeGreaterThan(0)
+  })
+
+  it("no status arg with future date returns positive", () => {
+    expect(daysToExpiry("2099-12-31")).toBeGreaterThan(0)
+  })
+
+  it("past date with Open returns negative", () => {
+    expect(daysToExpiry("2020-01-01", "Open")).toBeLessThan(0)
+  })
+})
+
+// ============================================================================
+// pnlClassName
+// ============================================================================
+describe("pnlClassName", () => {
+  it("positive value returns text-gain", () => {
+    expect(pnlClassName(100)).toBe("text-gain")
+  })
+
+  it("negative value returns text-loss", () => {
+    expect(pnlClassName(-50)).toBe("text-loss")
+  })
+
+  it("zero returns text-muted-foreground", () => {
+    expect(pnlClassName(0)).toBe("text-muted-foreground")
+  })
+
+  it("tiny positive returns text-gain", () => {
+    expect(pnlClassName(0.01)).toBe("text-gain")
+  })
+
+  it("tiny negative returns text-loss", () => {
+    expect(pnlClassName(-0.01)).toBe("text-loss")
   })
 })
