@@ -146,7 +146,7 @@ export const columns: ColumnDef<TransactionRecord>[] = [
     ),
   },
   {
-    accessorKey: "amount",
+    id: "amount",
     header: ({ column }) => (
       <div className="text-right">
         <SortHeader
@@ -156,8 +156,11 @@ export const columns: ColumnDef<TransactionRecord>[] = [
         />
       </div>
     ),
+    accessorFn: (row) => row.shares * row.price,
     cell: ({ row }) => (
-      <div className="text-right">{formatCurrency(row.original.amount)}</div>
+      <div className="text-right">
+        {formatCurrency(row.original.shares * row.original.price)}
+      </div>
     ),
   },
   {

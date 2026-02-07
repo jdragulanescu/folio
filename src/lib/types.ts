@@ -114,7 +114,6 @@ export interface TransactionRecord {
   type: "Buy" | "Sell"
   price: number
   shares: number
-  amount: number
   eps: number | null
   date: string
   platform: Broker

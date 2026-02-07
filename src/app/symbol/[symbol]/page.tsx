@@ -144,7 +144,6 @@ export default async function SymbolPage({
           type: tx.type,
           shares: tx.shares,
           price: tx.price,
-          amount: tx.amount,
           date: tx.date,
         })),
         symbolData.current_price!,
@@ -353,7 +352,7 @@ export default async function SymbolPage({
                         {formatNumber(tx.shares, 4)}
                       </TableCell>
                       <TableCell className="tabular-nums">
-                        {formatCurrency(tx.amount)}
+                        {formatCurrency(tx.shares * tx.price)}
                       </TableCell>
                       <TableCell>{tx.platform ?? "\u2013"}</TableCell>
                     </TableRow>

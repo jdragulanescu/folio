@@ -21,6 +21,28 @@ import Big from "big.js"
 Big.RM = Big.roundHalfUp
 
 // ---------------------------------------------------------------------------
+// Float Sanitisation
+// ---------------------------------------------------------------------------
+// NocoDB returns float64 artifacts like 1.5010000000000001 instead of 1.501.
+// toFixed(10) strips these (artifacts appear at ~15 dp) while preserving all
+// meaningful precision for financial data.
+// ---------------------------------------------------------------------------
+const SHARE_EPSILON = new Big("1e-9")
+
+function toBig(value: number): Big {
+  return new Big(value.toFixed(10))
+}
+
+function isValidTx(tx: { shares: unknown; price: unknown }): boolean {
+  return (
+    typeof tx.shares === "number" &&
+    typeof tx.price === "number" &&
+    !Number.isNaN(tx.shares) &&
+    !Number.isNaN(tx.price)
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Input Types
 // ---------------------------------------------------------------------------
 
@@ -28,7 +50,6 @@ export interface TransactionInput {
   type: "Buy" | "Sell"
   shares: number
   price: number
-  amount: number
   date: string
 }
 
@@ -105,7 +126,7 @@ export function computeHolding(
   transactions: TransactionInput[],
   currentPrice: number,
 ): HoldingResult {
-  const price = new Big(currentPrice)
+  const price = toBig(currentPrice)
 
   // Sort transactions: date ascending, buys before sells on same day
   const sorted = [...transactions].sort((a, b) => {
@@ -122,8 +143,10 @@ export function computeHolding(
   let realisedPnl = new Big(0)
 
   for (const tx of sorted) {
-    const txShares = new Big(tx.shares)
-    const txAmount = new Big(Math.abs(tx.amount))
+    if (!isValidTx(tx)) continue
+
+    const txShares = toBig(tx.shares)
+    const txAmount = txShares.times(toBig(tx.price))
 
     if (tx.type === "Buy") {
       pool.shares = pool.shares.plus(txShares)
@@ -139,8 +162,9 @@ export function computeHolding(
       pool.shares = pool.shares.minus(txShares)
       pool.totalCost = pool.totalCost.minus(costOfSold)
 
-      // Reset pool if fully sold (or gone negative from data issues)
-      if (pool.shares.lte(0)) {
+      // Reset pool if fully sold, gone negative, or effectively zero
+      // (float artifacts from NocoDB can leave tiny residuals like 1e-16)
+      if (pool.shares.lte(SHARE_EPSILON)) {
         pool = { shares: new Big(0), totalCost: new Big(0) }
       }
     }
@@ -281,8 +305,10 @@ export function computeRealisedGainsByFiscalYear(
     }
 
     for (const tx of sorted) {
-      const txShares = new Big(tx.shares)
-      const txAmount = new Big(Math.abs(tx.amount))
+      if (!isValidTx(tx)) continue
+
+      const txShares = toBig(tx.shares)
+      const txAmount = txShares.times(toBig(tx.price))
 
       if (tx.type === "Buy") {
         pool.shares = pool.shares.plus(txShares)
@@ -311,7 +337,7 @@ export function computeRealisedGainsByFiscalYear(
         pool.shares = pool.shares.minus(txShares)
         pool.totalCost = pool.totalCost.minus(costOfSold)
 
-        if (pool.shares.lte(0)) {
+        if (pool.shares.abs().lte(SHARE_EPSILON)) {
           pool = { shares: new Big(0), totalCost: new Big(0) }
         }
       }

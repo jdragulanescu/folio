@@ -15,7 +15,6 @@ interface TransactionInput {
   type: "Buy" | "Sell"
   shares: number
   price: number
-  amount: number
   date: string
 }
 
@@ -28,7 +27,7 @@ function tx(
   price: number,
   date: string,
 ): TransactionInput {
-  return { type, shares, price, amount: shares * price, date }
+  return { type, shares, price, date }
 }
 
 // ============================================================================
@@ -200,18 +199,59 @@ describe("computeHolding", () => {
     expect(result.realisedPnl).toEqual(new Big(250))
   })
 
-  // ---- Test: Negative sell amounts from spreadsheet migration ----
-  it("handles negative sell amounts from spreadsheet migration", () => {
+  // ---- Test: Amount computed from shares * price ----
+  it("computes amount from shares * price", () => {
     const transactions = [
-      { type: "Buy" as const, shares: 100, price: 10, amount: 1000, date: "2024-01-01" },
-      { type: "Sell" as const, shares: 40, price: 15, amount: -600, date: "2024-02-01" },
+      { type: "Buy" as const, shares: 100, price: 10, date: "2024-01-01" },
+      { type: "Sell" as const, shares: 40, price: 15, date: "2024-02-01" },
     ]
     const result = computeHolding(transactions, 12)
 
     expect(result.shares).toEqual(new Big(60))
-    // realisedPnl = 600 (abs) - 400 (cost of sold) = 200, NOT -600 - 400 = -1000
+    // realisedPnl = 40 * 15 - 40 * 10 = 600 - 400 = 200
     expect(result.realisedPnl).toEqual(new Big(200))
     expect(result.totalCost).toEqual(new Big(600))
+  })
+
+  // ---- Test: Float artifact pool reset ----
+  it("resets pool to zero when float artifacts leave near-zero residual", () => {
+    // Simulates NocoDB returning 1.5010000000000001 instead of 1.501
+    const transactions = [
+      tx("Buy", 1.501, 100, "2024-01-01"),
+      tx("Sell", 1.5010000000000001, 120, "2024-02-01"),
+    ]
+    const result = computeHolding(transactions, 120)
+
+    expect(result.shares).toEqual(new Big(0))
+    expect(result.totalCost).toEqual(new Big(0))
+  })
+
+  // ---- Test: Float artifacts in multi-step computation ----
+  it("handles accumulated float artifacts across many transactions", () => {
+    const transactions = [
+      tx("Buy", 25.977, 59.6, "2024-02-26"),
+      tx("Sell", 25.977, 90.9, "2024-12-16"),
+      tx("Buy", 100, 67.65, "2025-08-04"),
+    ]
+    const result = computeHolding(transactions, 67.65)
+
+    // After buy/sell of 25.977, pool should be exactly 0, then fresh buy of 100
+    expect(result.shares).toEqual(new Big(100))
+  })
+
+  // ---- Test: Skips transactions with null/invalid shares ----
+  it("skips transactions with null or NaN shares", () => {
+    const transactions = [
+      tx("Buy", 100, 10, "2024-01-01"),
+      { type: "Buy" as const, shares: null as unknown as number, price: 10, date: "2024-01-15" },
+      { type: "Buy" as const, shares: NaN, price: 10, date: "2024-01-20" },
+      { type: "Buy" as const, shares: 50, price: null as unknown as number, date: "2024-01-25" },
+    ]
+    const result = computeHolding(transactions, 12)
+
+    // Only the first valid transaction should count
+    expect(result.shares).toEqual(new Big(100))
+    expect(result.totalCost).toEqual(new Big(1000))
   })
 
   // ---- Test: Empty transactions ----
@@ -540,21 +580,21 @@ describe("computeRealisedGainsByFiscalYear", () => {
     expect(Number(result[1].realisedPnl.toFixed(2))).toBe(1000)
   })
 
-  it("handles negative sell amounts in fiscal year gains", () => {
+  it("computes amount from shares * price in fiscal year gains", () => {
     const txBySymbol = new Map([
       [
         "AAPL",
         [
-          { type: "Buy" as const, shares: 100, price: 50, amount: 5000, date: "2024-01-01" },
-          { type: "Sell" as const, shares: 100, price: 60, amount: -6000, date: "2024-06-15" },
+          { type: "Buy" as const, shares: 100, price: 50, date: "2024-01-01" },
+          { type: "Sell" as const, shares: 100, price: 60, date: "2024-06-15" },
         ],
       ],
     ])
     const result = computeRealisedGainsByFiscalYear(txBySymbol)
 
     expect(result).toHaveLength(1)
-    expect(Number(result[0].totalProceeds.toFixed(2))).toBe(6000) // positive (abs)
-    expect(Number(result[0].realisedPnl.toFixed(2))).toBe(1000) // profit, not -11000
+    expect(Number(result[0].totalProceeds.toFixed(2))).toBe(6000)
+    expect(Number(result[0].realisedPnl.toFixed(2))).toBe(1000)
   })
 
   it("returns empty array when no sells", () => {

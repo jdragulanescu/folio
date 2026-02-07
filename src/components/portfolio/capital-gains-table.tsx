@@ -43,7 +43,6 @@ export function CapitalGainsTable({
         type: tx.type,
         shares: tx.shares,
         price: tx.price,
-        amount: tx.amount,
         date: tx.date,
       })
       txBySymbol.set(tx.symbol, existing)
