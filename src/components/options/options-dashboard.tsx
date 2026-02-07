@@ -6,6 +6,7 @@ import { OptionsStatCards } from "./options-stat-cards"
 import { WheelTable } from "./wheel-table"
 import { LeapsTable } from "./leaps-table"
 import { AllOptionsTable } from "./all-options-table"
+import { PremiumChart } from "./premium-chart"
 
 interface OptionsDashboardProps {
   data: OptionsPageData
@@ -45,6 +46,9 @@ export function OptionsDashboard({ data }: OptionsDashboardProps) {
           <AllOptionsTable options={data.options} />
         </TabsContent>
       </Tabs>
+
+      {/* Premium Chart */}
+      <PremiumChart allOptions={data.options} />
     </div>
   )
 }
