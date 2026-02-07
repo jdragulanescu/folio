@@ -123,7 +123,7 @@ export function computeHolding(
 
   for (const tx of sorted) {
     const txShares = new Big(tx.shares)
-    const txAmount = new Big(tx.amount)
+    const txAmount = new Big(Math.abs(tx.amount))
 
     if (tx.type === "Buy") {
       pool.shares = pool.shares.plus(txShares)
@@ -282,7 +282,7 @@ export function computeRealisedGainsByFiscalYear(
 
     for (const tx of sorted) {
       const txShares = new Big(tx.shares)
-      const txAmount = new Big(tx.amount)
+      const txAmount = new Big(Math.abs(tx.amount))
 
       if (tx.type === "Buy") {
         pool.shares = pool.shares.plus(txShares)

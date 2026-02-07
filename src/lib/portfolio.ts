@@ -18,7 +18,7 @@ import {
   type TransactionInput,
 } from "./calculations"
 import { getAllRecords, fetchParallel } from "./nocodb"
-import { isLongStrategy } from "./options-shared"
+import { computeProfit, isLongStrategy } from "./options-shared"
 import type {
   SymbolRecord,
   TransactionRecord,
@@ -80,14 +80,6 @@ export interface PortfolioData {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** US-based brokers whose deposits are already in USD. */
-const US_BROKERS = new Set(["IBKR", "Robinhood"])
-
-/** Returns true if the given platform is a US-based broker. */
-function isUsBroker(platform: string | null): boolean {
-  return platform != null && US_BROKERS.has(platform)
-}
 
 /**
  * Determine the primary platform (broker) for a symbol by tallying shares
@@ -305,21 +297,16 @@ export async function getPortfolioData(): Promise<PortfolioData> {
 
   // Step 9: Calculate cash balance (all values converted to USD)
   let cashBalance = 0
-  // + deposits (convert GBP deposits to USD)
+  // + deposits (all deposits are GBP — convert to USD)
   for (const d of deposits) {
-    if (isUsBroker(d.platform)) {
-      cashBalance += d.amount
-    } else {
-      // GBP deposit: divide by USD/GBP rate to get USD
-      cashBalance += d.amount / usdGbpRate
-    }
+    cashBalance += d.amount / usdGbpRate
   }
-  // +/- stock transactions
+  // +/- stock transactions (abs handles negative sell amounts from migration)
   for (const tx of transactions) {
     if (tx.type === "Buy") {
-      cashBalance -= tx.amount
+      cashBalance -= Math.abs(tx.amount)
     } else {
-      cashBalance += tx.amount
+      cashBalance += Math.abs(tx.amount)
     }
   }
   // + dividends
@@ -401,21 +388,17 @@ export async function getPortfolioData(): Promise<PortfolioData> {
       ? (dayChange / totalMarketValueWithCash) * 100
       : 0
 
-  // Step 12: Compute total deposited (converted to USD)
+  // Step 12: Compute total deposited (all deposits are GBP — convert to USD)
   let totalDeposited = 0
   for (const d of deposits) {
-    if (isUsBroker(d.platform)) {
-      totalDeposited += d.amount
-    } else {
-      totalDeposited += d.amount / usdGbpRate
-    }
+    totalDeposited += d.amount / usdGbpRate
   }
 
-  // Step 13: Compute options premium (premium received from selling × qty × 100)
+  // Step 13: Compute options P&L (net profit for closed, gross premium for open)
   let optionsPremium = 0
   for (const o of options) {
     if (o.buy_sell === "Sell") {
-      optionsPremium += o.premium * o.qty * 100
+      optionsPremium += computeProfit(o) ?? o.premium * o.qty * 100
     }
   }
 

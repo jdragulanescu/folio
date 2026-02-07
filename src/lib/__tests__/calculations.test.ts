@@ -200,6 +200,20 @@ describe("computeHolding", () => {
     expect(result.realisedPnl).toEqual(new Big(250))
   })
 
+  // ---- Test: Negative sell amounts from spreadsheet migration ----
+  it("handles negative sell amounts from spreadsheet migration", () => {
+    const transactions = [
+      { type: "Buy" as const, shares: 100, price: 10, amount: 1000, date: "2024-01-01" },
+      { type: "Sell" as const, shares: 40, price: 15, amount: -600, date: "2024-02-01" },
+    ]
+    const result = computeHolding(transactions, 12)
+
+    expect(result.shares).toEqual(new Big(60))
+    // realisedPnl = 600 (abs) - 400 (cost of sold) = 200, NOT -600 - 400 = -1000
+    expect(result.realisedPnl).toEqual(new Big(200))
+    expect(result.totalCost).toEqual(new Big(600))
+  })
+
   // ---- Test: Empty transactions ----
   it("returns zeros for empty transaction array", () => {
     const result = computeHolding([], 50)
@@ -524,6 +538,23 @@ describe("computeRealisedGainsByFiscalYear", () => {
     expect(Number(result[0].realisedPnl.toFixed(2))).toBe(2000)
     expect(result[1].fiscalYear).toBe("2024/25")
     expect(Number(result[1].realisedPnl.toFixed(2))).toBe(1000)
+  })
+
+  it("handles negative sell amounts in fiscal year gains", () => {
+    const txBySymbol = new Map([
+      [
+        "AAPL",
+        [
+          { type: "Buy" as const, shares: 100, price: 50, amount: 5000, date: "2024-01-01" },
+          { type: "Sell" as const, shares: 100, price: 60, amount: -6000, date: "2024-06-15" },
+        ],
+      ],
+    ])
+    const result = computeRealisedGainsByFiscalYear(txBySymbol)
+
+    expect(result).toHaveLength(1)
+    expect(Number(result[0].totalProceeds.toFixed(2))).toBe(6000) // positive (abs)
+    expect(Number(result[0].realisedPnl.toFixed(2))).toBe(1000) // profit, not -11000
   })
 
   it("returns empty array when no sells", () => {
