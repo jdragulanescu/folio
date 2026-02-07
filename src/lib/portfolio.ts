@@ -18,7 +18,7 @@ import {
   type TransactionInput,
 } from "./calculations"
 import { getAllRecords, fetchParallel } from "./nocodb"
-import { computeProfit, isLongStrategy } from "./options-shared"
+import { computeProfit, computeOpenLongPnl, isLongStrategy } from "./options-shared"
 import type {
   SymbolRecord,
   TransactionRecord,
@@ -59,6 +59,15 @@ export interface DisplayHolding {
   beta: number | null
 }
 
+export interface CashBreakdown {
+  depositsUsd: number
+  stockBuys: number
+  stockSells: number
+  dividends: number
+  optionsNet: number
+  total: number
+}
+
 export interface PortfolioData {
   holdings: DisplayHolding[]
   totals: {
@@ -72,6 +81,7 @@ export interface PortfolioData {
   dayChange: number
   dayChangePct: number
   cashBalance: number
+  cashBreakdown: CashBreakdown
   forexRate: number
   options: OptionRecord[]
   transactions: TransactionRecord[]
@@ -85,7 +95,7 @@ export interface PortfolioData {
  * Determine the primary platform (broker) for a symbol by tallying shares
  * per platform across all transactions and picking the one with the most.
  */
-function getPrimaryPlatform(
+export function getPrimaryPlatform(
   transactions: TransactionRecord[],
 ): string | null {
   const tally = new Map<string, number>()
@@ -296,41 +306,54 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   baseTotals.totalCost += longOptionsCost
 
   // Step 9: Calculate cash balance (all values converted to USD)
-  let cashBalance = 0
+  // Track each component for debugging/display
+  let cbDeposits = 0
+  let cbBuys = 0
+  let cbSells = 0
+  let cbDividends = 0
+  let cbOptions = 0
+
   // + deposits (all deposits are GBP — convert to USD)
   for (const d of deposits) {
-    cashBalance += d.amount / usdGbpRate
+    cbDeposits += d.amount / usdGbpRate
   }
   // +/- stock transactions (abs handles negative sell amounts from migration)
   for (const tx of transactions) {
     if (tx.type === "Buy") {
-      cashBalance -= Math.abs(tx.amount)
+      cbBuys += Math.abs(tx.amount)
     } else {
-      cashBalance += Math.abs(tx.amount)
+      cbSells += Math.abs(tx.amount)
     }
   }
   // + dividends
   for (const div of dividends) {
-    cashBalance += div.amount
+    cbDividends += div.amount
   }
-  // + sold option premiums (credit × qty × 100)
+  // +/- option premiums
   for (const o of options) {
     if (o.buy_sell === "Sell") {
-      cashBalance += o.premium * o.qty * 100
-      // - closing cost if closed
+      cbOptions += o.premium * o.qty * 100
       if (o.close_premium != null) {
-        cashBalance -= o.close_premium * o.qty * 100
+        cbOptions -= o.close_premium * o.qty * 100
       }
     } else {
-      // bought options: cost to open
-      cashBalance -= o.premium * o.qty * 100
-      // + closing proceeds if closed
+      cbOptions -= o.premium * o.qty * 100
       if (o.close_premium != null) {
-        cashBalance += o.close_premium * o.qty * 100
+        cbOptions += o.close_premium * o.qty * 100
       }
     }
   }
-  cashBalance = Number(cashBalance.toFixed(2))
+  const cashBalance = Number(
+    (cbDeposits - cbBuys + cbSells + cbDividends + cbOptions).toFixed(2),
+  )
+  const cashBreakdown: CashBreakdown = {
+    depositsUsd: Number(cbDeposits.toFixed(2)),
+    stockBuys: Number(cbBuys.toFixed(2)),
+    stockSells: Number(cbSells.toFixed(2)),
+    dividends: Number(cbDividends.toFixed(2)),
+    optionsNet: Number(cbOptions.toFixed(2)),
+    total: cashBalance,
+  }
 
   // Add cash to total market value for weight calculation
   const totalMarketValueWithCash =
@@ -394,13 +417,32 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     totalDeposited += d.amount / usdGbpRate
   }
 
-  // Step 13: Compute options P&L (net profit for closed, gross premium for open)
-  let optionsPremium = 0
+  // Step 13: Compute options P&L — must match options page exactly
+  // Short P&L: net premium from sold options
+  let shortOptionsPnl = 0
   for (const o of options) {
     if (o.buy_sell === "Sell") {
-      optionsPremium += computeProfit(o) ?? o.premium * o.qty * 100
+      shortOptionsPnl += computeProfit(o) ?? o.premium * o.qty * 100
     }
   }
+  // Long P&L: intrinsic value for open, computeProfit for closed, skip Assigned
+  let longOptionsPnl = 0
+  for (const o of options) {
+    if (o.buy_sell !== "Buy" || o.status === "Assigned") continue
+    const profit = computeProfit(o)
+    if (profit != null) {
+      longOptionsPnl += profit
+    } else {
+      const price = symbolMap.get(o.ticker)?.current_price
+      if (price != null) longOptionsPnl += computeOpenLongPnl(o, price)
+    }
+  }
+  // Commission (per-contract × qty)
+  let optionsCommission = 0
+  for (const o of options) {
+    if (o.commission != null) optionsCommission += o.commission * o.qty
+  }
+  const optionsPremium = shortOptionsPnl + longOptionsPnl + optionsCommission
 
   return {
     holdings: displayHoldings,
@@ -415,6 +457,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     dayChange: Number(dayChange.toFixed(2)),
     dayChangePct: Number(dayChangePct.toFixed(2)),
     cashBalance,
+    cashBreakdown,
     forexRate: usdGbpRate,
     options,
     transactions,
