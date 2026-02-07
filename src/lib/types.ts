@@ -170,6 +170,7 @@ export interface DepositRecord {
   Id: number
   month: string
   amount: number
+  amount_usd: number | null
   platform: Broker
   CreatedAt?: string
   UpdatedAt?: string

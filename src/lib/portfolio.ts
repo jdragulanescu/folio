@@ -319,9 +319,9 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   let cbSells = 0
   let cbDividends = 0
 
-  // + deposits (all deposits are GBP — convert to USD)
+  // + deposits: use historical USD amount when available, fall back to current rate
   for (const d of deposits) {
-    cbDeposits += d.amount / usdGbpRate
+    cbDeposits += d.amount_usd ?? d.amount / usdGbpRate
   }
   // +/- stock transactions (buys/sells from transactions table only, no option capital gains)
   for (const tx of transactions) {
@@ -406,10 +406,10 @@ export async function getPortfolioData(): Promise<PortfolioData> {
       ? (dayChange / totalMarketValueWithCash) * 100
       : 0
 
-  // Step 12: Compute total deposited (all deposits are GBP — convert to USD)
+  // Step 12: Compute total deposited (use historical USD when available)
   let totalDeposited = 0
   for (const d of deposits) {
-    totalDeposited += d.amount / usdGbpRate
+    totalDeposited += d.amount_usd ?? d.amount / usdGbpRate
   }
 
   return {
