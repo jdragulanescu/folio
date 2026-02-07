@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 
