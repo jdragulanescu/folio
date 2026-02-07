@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { TrendingUp, TrendingDown } from "lucide-react"
 
 interface TopMoversProps {
   holdings: DisplayHolding[]
@@ -38,7 +39,7 @@ export function TopMovers({ holdings }: TopMoversProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Top Movers</CardTitle>
+          <CardTitle className="text-sm font-medium">Top Movers</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">No data available</p>
@@ -48,17 +49,18 @@ export function TopMovers({ holdings }: TopMoversProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <>
       {/* Top Gainers */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-gain">Top Gainers</CardTitle>
+        <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+          <TrendingUp className="text-gain size-4" />
+          <CardTitle className="text-sm font-medium">Top Gainers</CardTitle>
         </CardHeader>
         <CardContent>
           {gainers.length === 0 ? (
             <p className="text-sm text-muted-foreground">No gainers today</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {gainers.map((h) => (
                 <MoverRow key={h.symbol} holding={h} />
               ))}
@@ -69,14 +71,15 @@ export function TopMovers({ holdings }: TopMoversProps) {
 
       {/* Top Losers */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-loss">Top Losers</CardTitle>
+        <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+          <TrendingDown className="text-loss size-4" />
+          <CardTitle className="text-sm font-medium">Top Losers</CardTitle>
         </CardHeader>
         <CardContent>
           {losers.length === 0 ? (
             <p className="text-sm text-muted-foreground">No losers today</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {losers.map((h) => (
                 <MoverRow key={h.symbol} holding={h} />
               ))}
@@ -84,7 +87,7 @@ export function TopMovers({ holdings }: TopMoversProps) {
           )}
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }
 
@@ -96,7 +99,7 @@ function MoverRow({ holding }: { holding: DisplayHolding }) {
       <div>
         <Link
           href={`/symbol/${holding.symbol}`}
-          className="font-semibold hover:underline"
+          className="text-sm font-semibold hover:underline"
         >
           {holding.symbol}
         </Link>
@@ -104,7 +107,7 @@ function MoverRow({ holding }: { holding: DisplayHolding }) {
           {formatCurrency(holding.marketValue)}
         </p>
       </div>
-      <span className={`font-mono text-sm font-medium ${pnlClassName(changePct)}`}>
+      <span className={`font-mono text-sm tabular-nums ${pnlClassName(changePct)}`}>
         {formatPercent(changePct)}
       </span>
     </div>

@@ -16,17 +16,18 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardAction,
 } from "@/components/ui/card"
 
 const CHART_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "oklch(0.55 0.15 250)",
-  "oklch(0.65 0.18 330)",
+  "oklch(0.65 0.19 250)",
+  "oklch(0.62 0.17 162)",
+  "oklch(0.68 0.18 80)",
+  "oklch(0.58 0.20 330)",
+  "oklch(0.60 0.15 200)",
   "oklch(0.70 0.14 110)",
+  "oklch(0.55 0.16 280)",
+  "oklch(0.63 0.20 50)",
 ]
 
 interface BrokerBreakdownProps {
@@ -102,47 +103,49 @@ export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Broker Breakdown</CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setExpanded((prev) => !prev)}
-        >
-          {expanded ? "Hide" : "View"}
-        </Button>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium">Broker Breakdown</CardTitle>
+        <CardAction>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => setExpanded((prev) => !prev)}
+            className="text-xs"
+          >
+            {expanded ? "Hide" : "View"}
+          </Button>
+        </CardAction>
       </CardHeader>
 
       {expanded && (
         <CardContent className="space-y-6">
-          {/* Broker summary table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2 font-medium">Broker</th>
-                  <th className="pb-2 text-right font-medium">Holdings</th>
-                  <th className="pb-2 text-right font-medium">Value</th>
-                  <th className="pb-2 text-right font-medium">P&L</th>
-                  <th className="pb-2 text-right font-medium">Weight</th>
+                  <th className="pb-2 text-xs font-medium">Broker</th>
+                  <th className="pb-2 text-right text-xs font-medium">Holdings</th>
+                  <th className="pb-2 text-right text-xs font-medium">Value</th>
+                  <th className="pb-2 text-right text-xs font-medium">P&L</th>
+                  <th className="pb-2 text-right text-xs font-medium">Weight</th>
                 </tr>
               </thead>
               <tbody>
                 {brokers.map((b) => (
                   <tr key={b.key} className="border-b last:border-0">
-                    <td className="py-2 font-medium">{b.name}</td>
-                    <td className="py-2 text-right tabular-nums">
+                    <td className="py-2 text-sm font-medium">{b.name}</td>
+                    <td className="py-2 text-right tabular-nums text-sm">
                       {b.holdingsCount}
                     </td>
-                    <td className="py-2 text-right tabular-nums">
+                    <td className="py-2 text-right tabular-nums text-sm">
                       {formatCurrency(b.marketValue)}
                     </td>
                     <td
-                      className={`py-2 text-right tabular-nums ${pnlClassName(b.unrealisedPnl)}`}
+                      className={`py-2 text-right tabular-nums text-sm ${pnlClassName(b.unrealisedPnl)}`}
                     >
                       {formatCurrency(b.unrealisedPnl)}
                     </td>
-                    <td className="py-2 text-right tabular-nums">
+                    <td className="py-2 text-right tabular-nums text-sm">
                       {formatPercent(b.weightPct).replace("+", "")}
                     </td>
                   </tr>
@@ -151,56 +154,59 @@ export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
             </table>
           </div>
 
-          {/* Broker allocation donut chart */}
           {chartData.length > 0 && (
-            <ChartContainer
-              config={chartConfig}
-              className="mx-auto aspect-square max-h-[200px]"
-            >
-              <PieChart>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={50}
-                  strokeWidth={5}
-                >
-                  <Label
-                    content={({ viewBox }) => {
-                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                        return (
-                          <text
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                          >
-                            <tspan
+            <div>
+              <ChartContainer
+                config={chartConfig}
+                className="mx-auto h-[180px] w-full max-w-[180px]"
+              >
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={45}
+                    outerRadius={70}
+                    strokeWidth={3}
+                    stroke="var(--color-card)"
+                  >
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                          return (
+                            <text
                               x={viewBox.cx}
                               y={viewBox.cy}
-                              className="fill-foreground text-lg font-bold"
+                              textAnchor="middle"
+                              dominantBaseline="middle"
                             >
-                              {brokers.length}
-                            </tspan>
-                            <tspan
-                              x={viewBox.cx}
-                              y={(viewBox.cy ?? 0) + 18}
-                              className="fill-muted-foreground text-xs"
-                            >
-                              {brokers.length === 1 ? "Broker" : "Brokers"}
-                            </tspan>
-                          </text>
-                        )
-                      }
-                    }}
-                  />
-                </Pie>
-              </PieChart>
-            </ChartContainer>
+                              <tspan
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                className="fill-foreground text-base font-bold"
+                              >
+                                {brokers.length}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy ?? 0) + 16}
+                                className="fill-muted-foreground text-[10px]"
+                              >
+                                {brokers.length === 1 ? "Broker" : "Brokers"}
+                              </tspan>
+                            </text>
+                          )
+                        }
+                      }}
+                    />
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </div>
           )}
         </CardContent>
       )}

@@ -4,6 +4,9 @@ import { SummaryCards } from "@/components/portfolio/summary-cards"
 import { AllocationCharts } from "@/components/portfolio/allocation-charts"
 import { TopMovers } from "@/components/portfolio/top-movers"
 import { BrokerBreakdown } from "@/components/portfolio/broker-breakdown"
+import { WeightBarChart } from "@/components/portfolio/weight-bar-chart"
+import { CostWeightChart } from "@/components/portfolio/cost-weight-chart"
+import { EpsYieldChart } from "@/components/portfolio/eps-yield-chart"
 
 export default async function PortfolioPage() {
   const data = await getPortfolioData()
@@ -13,19 +16,17 @@ export default async function PortfolioPage() {
       {/* Summary cards - full width */}
       <SummaryCards data={data} />
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left: Holdings table and broker breakdown (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
-          <HoldingsTable holdings={data.holdings} />
-          <BrokerBreakdown holdings={data.holdings} />
-        </div>
+      {/* Holdings table - full width */}
+      <HoldingsTable holdings={data.holdings} />
 
-        {/* Right: Charts and movers (1/3 width) */}
-        <div className="space-y-6">
-          <AllocationCharts holdings={data.holdings} />
-          <TopMovers holdings={data.holdings} />
-        </div>
+      {/* Charts grid - responsive 2-col or 3-col */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <WeightBarChart holdings={data.holdings} />
+        <AllocationCharts holdings={data.holdings} />
+        <CostWeightChart holdings={data.holdings} />
+        <EpsYieldChart holdings={data.holdings} />
+        <TopMovers holdings={data.holdings} />
+        <BrokerBreakdown holdings={data.holdings} />
       </div>
     </div>
   )

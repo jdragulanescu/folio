@@ -17,18 +17,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-// Chart colour palette using CSS custom properties
 const CHART_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "oklch(0.55 0.15 250)",
-  "oklch(0.65 0.18 330)",
+  "oklch(0.65 0.19 250)",
+  "oklch(0.62 0.17 162)",
+  "oklch(0.68 0.18 80)",
+  "oklch(0.58 0.20 330)",
+  "oklch(0.60 0.15 200)",
   "oklch(0.70 0.14 110)",
-  "oklch(0.60 0.20 50)",
-  "oklch(0.50 0.12 200)",
+  "oklch(0.55 0.16 280)",
+  "oklch(0.63 0.20 50)",
+  "oklch(0.50 0.12 220)",
+  "oklch(0.66 0.13 140)",
 ]
 
 const MIN_SLICE_PCT = 3
@@ -43,15 +42,10 @@ interface SliceData {
   fill: string
 }
 
-/**
- * Group holdings by a field, merge small slices into "Other",
- * and produce chart data with colours.
- */
 function buildChartData(
   holdings: DisplayHolding[],
   field: "sector" | "strategy",
 ): { data: SliceData[]; config: ChartConfig; totalValue: number } {
-  // Aggregate market value by group
   const groups = new Map<string, number>()
   let totalValue = 0
 
@@ -65,10 +59,8 @@ function buildChartData(
     return { data: [], config: {}, totalValue: 0 }
   }
 
-  // Sort by value descending
   const sorted = [...groups.entries()].sort((a, b) => b[1] - a[1])
 
-  // Merge small slices into "Other"
   const mainSlices: [string, number][] = []
   let otherValue = 0
 
@@ -85,7 +77,6 @@ function buildChartData(
     mainSlices.push(["Other", otherValue])
   }
 
-  // Build config and data
   const config: ChartConfig = {}
   const data: SliceData[] = []
 
@@ -126,7 +117,7 @@ function AllocationDonut({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">No data available</p>
@@ -140,12 +131,12 @@ function AllocationDonut({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={config}
-          className="mx-auto aspect-square max-h-[250px]"
+          className="mx-auto h-[220px] w-full max-w-[220px]"
         >
           <PieChart>
             <ChartTooltip
@@ -156,8 +147,10 @@ function AllocationDonut({
               data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={60}
-              strokeWidth={5}
+              innerRadius={55}
+              outerRadius={85}
+              strokeWidth={3}
+              stroke="var(--color-card)"
             >
               <Label
                 content={({ viewBox }) => {
@@ -172,14 +165,14 @@ function AllocationDonut({
                         <tspan
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          className="fill-foreground text-xl font-bold"
+                          className="fill-foreground text-lg font-bold"
                         >
                           {center.primary}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
-                          y={(viewBox.cy ?? 0) + 20}
-                          className="fill-muted-foreground text-xs"
+                          y={(viewBox.cy ?? 0) + 18}
+                          className="fill-muted-foreground text-[10px]"
                         >
                           {center.secondary}
                         </tspan>
@@ -198,7 +191,7 @@ function AllocationDonut({
 
 export function AllocationCharts({ holdings }: AllocationChartsProps) {
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <>
       <AllocationDonut
         title="Sector Allocation"
         holdings={holdings}
@@ -217,6 +210,6 @@ export function AllocationCharts({ holdings }: AllocationChartsProps) {
           secondary: groupCount === 1 ? "Strategy" : "Strategies",
         })}
       />
-    </div>
+    </>
   )
 }
