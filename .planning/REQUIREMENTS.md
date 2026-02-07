@@ -24,18 +24,18 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Portfolio Overview
 
-- [ ] **PORT-01**: Holdings table showing symbol, name, shares, avg cost, current price, market value, P&L (£), P&L (%), day change (%), sector, strategy, weight (%)
-- [ ] **PORT-02**: Holdings table is sortable by any column and filterable by symbol search
-- [ ] **PORT-03**: Only symbols with current shares > 0 shown (fully sold positions excluded)
-- [ ] **PORT-04**: Summary cards: Total Portfolio Value, Total P&L, Day Change, Total Deposited, Options Premium Collected
-- [ ] **PORT-05**: Sector allocation donut chart
-- [ ] **PORT-06**: Strategy allocation donut chart (Growth/Value/Risky)
+- [x] **PORT-01**: Holdings table showing symbol, name, shares, avg cost, current price, market value, P&L (£), P&L (%), day change (%), sector, strategy, weight (%)
+- [x] **PORT-02**: Holdings table is sortable by any column and filterable by symbol search
+- [x] **PORT-03**: Only symbols with current shares > 0 shown (fully sold positions excluded)
+- [x] **PORT-04**: Summary cards: Total Portfolio Value, Total P&L, Day Change, Total Deposited, Options Premium Collected
+- [x] **PORT-05**: Sector allocation donut chart
+- [x] **PORT-06**: Strategy allocation donut chart (Growth/Value/Risky)
 - [ ] **PORT-07**: Unified portfolio view showing stocks AND bought options together for weight/allocation visibility
 - [ ] **PORT-08**: Bought options (LEAPS and other) appear as positions with manually-updated market values for P&L and weight
-- [ ] **PORT-09**: Top 5 gainers and top 5 losers cards (by day change and overall P&L)
-- [ ] **PORT-10**: Per-broker P&L and allocation breakdown (donut chart + summary)
+- [x] **PORT-09**: Top 5 gainers and top 5 losers cards (by day change and overall P&L)
+- [x] **PORT-10**: Per-broker P&L and allocation breakdown (donut chart + summary)
 - [ ] **PORT-11**: Benchmark comparison: portfolio vs S&P 500 normalised to 100 at start date (line chart)
-- [ ] **PORT-12**: Clicking a symbol row shows detail view with all transactions for that symbol
+- [x] **PORT-12**: Clicking a symbol row shows detail view with all transactions for that symbol
 
 ### Transactions
 

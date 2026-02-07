@@ -165,7 +165,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 |-------|----------------|--------|-----------|
 | 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
 | 2. Live Pricing & Core Calculations | 3/3 | ✓ Complete | 2026-02-06 |
-| 3. Portfolio Overview | 3/3 | Complete | 2026-02-07 |
+| 3. Portfolio Overview | 3/3 | ✓ Complete | 2026-02-07 |
 | 4. Transactions & Options Display | 0/4 | Planned | - |
 | 5. Dividends & Deposits Display | 0/2 | Not started | - |
 | 6. Write Operations | 0/4 | Not started | - |
