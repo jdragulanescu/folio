@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 3 & 4 of 8 (Portfolio Overview + Transactions & Options Display)
-Plan: 04-02 complete (2 of 4 in Phase 4), 03-01 complete (1 of 3 in Phase 3)
+Plan: 04-03 complete (3 of 4 in Phase 4), 03-02 complete (2 of 3 in Phase 3)
 Status: In progress
-Last activity: 2026-02-07 -- Completed 04-02-PLAN.md (transactions table UI)
+Last activity: 2026-02-07 -- Completed 04-03-PLAN.md (options dashboard UI)
 
-Progress: [██████░░░░] 56%
+Progress: [███████░░░] 68%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 11
 - Average duration: 4min
-- Total execution time: 0.55 hours
+- Total execution time: 0.70 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [██████░░░░] 56%
 |-------|-------|-------|----------|
 | 01 | 3/3 | 15min | 5min |
 | 02 | 3/3 | 9min | 3min |
-| 03 | 1/3 | 3min | 3min |
-| 04 | 2/4 | 8min | 4min |
+| 03 | 2/3 | 10min | 5min |
+| 04 | 3/4 | 10min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (4min), 02-02 (3min), 03-01 (3min), 04-01 (4min), 04-02 (4min)
+- Last 5 plans: 03-01 (3min), 04-01 (4min), 04-02 (4min), 03-02 (7min), 04-03 (2min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -77,6 +77,11 @@ Recent decisions affecting current work:
 - [03-01]: Shares exported with 6 decimal places for fractional share accuracy
 - [03-01]: dayChange computed per-holding then summed; null changePct treated as 0
 - [03-01]: unrealisedPnlPct as (unrealisedPnl / totalCost) * 100 with zero guard
+- [03-02]: Default sort: weight descending (most impactful positions first)
+- [03-02]: 6 core columns visible by default, 9 optional toggle-able columns hidden
+- [03-02]: Null changePct sorted to bottom via custom nullBottomSort function
+- [03-02]: Weight shows N/A on symbol detail page (needs full portfolio context)
+- [03-02]: ROE displayed as percentage (value * 100) since stored as decimal
 - [04-01]: formatCurrency defaults to USD (was GBP) since portfolio holds US stocks
 - [04-01]: Roll chain matching uses call_put type + 5-day proximity heuristic
 - [04-01]: Premium chart groups by opened date month (when premium was received/paid)
@@ -85,6 +90,9 @@ Recent decisions affecting current work:
 - [04-02]: Radix Select uses "all" sentinel value (empty string not supported as item value)
 - [04-02]: Symbol input debounce is local-only (React compiler prohibits setState in useEffect)
 - [04-02]: ToggleGroup uses "all" default value for visual highlighting
+- [04-03]: Stat cards placed above tabs to always show overall totals regardless of active tab
+- [04-03]: LEAPS table uses flat rows (no roll chain expansion) for simplicity
+- [04-03]: All tab uses flat OptionsRow[] without roll chain grouping for unified view
 
 ### Pending Todos
 
@@ -106,5 +114,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed 04-02-PLAN.md (transactions table UI)
+Stopped at: Completed 04-03-PLAN.md (options dashboard UI)
 Resume file: None
