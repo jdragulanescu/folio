@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import type { OptionRecord } from "../types"
 import {
   computeProfit,
+  computeStats,
   computeDaysHeld,
   computeReturnPct,
   computeCollateral,
@@ -972,7 +973,7 @@ describe("buildPremiumByMonth", () => {
     expect(result[11]).toEqual({ month: "Dec", wheel: 0, leaps: 0 })
   })
 
-  it("accumulates Wheel premium in correct month (by close_date)", () => {
+  it("accumulates Wheel profit in correct month (by close_date)", () => {
     const opt = makeOption({
       Id: 1,
       strategy_type: "Wheel",
@@ -980,43 +981,46 @@ describe("buildPremiumByMonth", () => {
       close_date: "2024-03-20",
       status: "Closed",
       premium: 2.5,
+      close_premium: 0.5,
       qty: 2,
     })
     const result = buildPremiumByMonth([opt], 2024)
 
-    // March (close_date month) = index 2, premium = 2.5 × 2 × 100 = 500
-    expect(result[2].wheel).toBe(500)
+    // March (close_date month) = index 2, profit = (2.5 - 0.5) × 2 × 100 = 400
+    expect(result[2].wheel).toBe(400)
     expect(result[2].leaps).toBe(0)
     // February (opened month) should be 0
     expect(result[1].wheel).toBe(0)
   })
 
-  it("accumulates LEAPS premium in correct month (by close_date)", () => {
+  it("accumulates LEAPS profit in correct month (by close_date)", () => {
     const opt = makeOption({
       Id: 2,
       strategy_type: "LEAPS",
       buy_sell: "Buy",
       opened: "2024-04-01",
       close_date: "2024-06-15",
+      close_premium: 12.0,
       status: "Closed",
       premium: 8.0,
       qty: 1,
     })
     const result = buildPremiumByMonth([opt], 2024)
 
-    // June (close_date month) = index 5, premium = 8.0 × 1 × 100 = 800
-    expect(result[5].leaps).toBe(800)
+    // June (close_date month) = index 5, profit = (12.0 - 8.0) × 1 × 100 = 400
+    expect(result[5].leaps).toBe(400)
     expect(result[5].wheel).toBe(0)
     // April (opened month) should be 0
     expect(result[3].leaps).toBe(0)
   })
 
   it("filters by close_date year", () => {
-    const opt2023 = makeOption({ Id: 1, opened: "2023-05-01", close_date: "2023-07-15", status: "Closed", strategy_type: "Wheel", premium: 5.0, qty: 1 })
-    const opt2024 = makeOption({ Id: 2, opened: "2024-05-01", close_date: "2024-06-20", status: "Closed", strategy_type: "Wheel", premium: 3.0, qty: 1 })
+    const opt2023 = makeOption({ Id: 1, opened: "2023-05-01", close_date: "2023-07-15", status: "Closed", strategy_type: "Wheel", premium: 5.0, close_premium: 1.0, qty: 1 })
+    const opt2024 = makeOption({ Id: 2, opened: "2024-05-01", close_date: "2024-06-20", status: "Closed", strategy_type: "Wheel", premium: 3.0, close_premium: 0.5, qty: 1 })
 
     const result = buildPremiumByMonth([opt2023, opt2024], 2024)
-    expect(result[5].wheel).toBe(300) // Only 2024 close_date option (June)
+    // Only 2024 option (June), profit = (3.0 - 0.5) × 1 × 100 = 250
+    expect(result[5].wheel).toBe(250)
   })
 
   it("VPCS strategy is not tracked separately in chart", () => {
@@ -1035,12 +1039,12 @@ describe("buildPremiumByMonth", () => {
   })
 
   it("multiple options in same close_date month accumulate", () => {
-    const opt1 = makeOption({ Id: 1, strategy_type: "Wheel", opened: "2024-01-15", close_date: "2024-03-05", status: "Closed", premium: 2.0, qty: 1 })
-    const opt2 = makeOption({ Id: 2, strategy_type: "Wheel", opened: "2024-02-10", close_date: "2024-03-20", status: "Closed", premium: 3.0, qty: 1 })
+    const opt1 = makeOption({ Id: 1, strategy_type: "Wheel", opened: "2024-01-15", close_date: "2024-03-05", status: "Closed", premium: 2.0, close_premium: 0.5, qty: 1 })
+    const opt2 = makeOption({ Id: 2, strategy_type: "Wheel", opened: "2024-02-10", close_date: "2024-03-20", status: "Closed", premium: 3.0, close_premium: 0.5, qty: 1 })
 
     const result = buildPremiumByMonth([opt1, opt2], 2024)
-    // 2.0 × 100 + 3.0 × 100 = 500 (both closed in March)
-    expect(result[2].wheel).toBe(500)
+    // profit1 = (2.0 - 0.5) × 100 = 150, profit2 = (3.0 - 0.5) × 100 = 250
+    expect(result[2].wheel).toBe(400)
   })
 
   it("skips options without close_date (open positions)", () => {
@@ -1060,11 +1064,12 @@ describe("buildPremiumByMonth", () => {
       close_date: "2024-03-10",
       status: "Closed",
       premium: 2.0,
+      close_premium: 0.5,
       qty: 1,
     })
     const result = buildPremiumByMonth([openOpt, closedOpt], 2024)
-    // Only the closed option's premium should appear (200), not the open one (500)
-    expect(result[2].wheel).toBe(200)
+    // Only the closed option's profit should appear: (2.0 - 0.5) × 100 = 150
+    expect(result[2].wheel).toBe(150)
   })
 
   it("groups by close_date month, not opened month", () => {
@@ -1075,12 +1080,14 @@ describe("buildPremiumByMonth", () => {
       close_date: "2024-04-10",
       status: "Closed",
       premium: 3.0,
+      close_premium: 0.5,
       qty: 1,
     })
     const result = buildPremiumByMonth([opt], 2024)
     // Should appear in April (index 3), NOT January (index 0)
+    // profit = (3.0 - 0.5) × 100 = 250
     expect(result[0].wheel).toBe(0)  // January = 0
-    expect(result[3].wheel).toBe(300)  // April = 300
+    expect(result[3].wheel).toBe(250)  // April = 250
   })
 })
 
@@ -1141,43 +1148,11 @@ describe("buildOptionsRows", () => {
 })
 
 // ============================================================================
-// Stats Logic Integration
-// ============================================================================
-// computeStats is private in options.ts (behind server-only), but we test
-// the same aggregation logic using the exported pure functions.
+// computeStats
 // ============================================================================
 
-describe("stats aggregation logic", () => {
-  const CLOSED_STATUSES: OptionRecord["status"][] = ["Closed", "Expired", "Assigned", "Rolled"]
-
-  function computeStatsFromOptions(options: OptionRecord[]) {
-    const shortPnl = options
-      .filter((o) => o.buy_sell === "Sell")
-      .reduce((sum, o) => sum + (computeProfit(o) ?? (o.premium * o.qty * 100)), 0)
-
-    const longPnl = options
-      .filter((o) => o.buy_sell === "Buy")
-      .reduce((sum, o) => sum + (computeProfit(o) ?? 0), 0)
-
-    const totalCommission = options
-      .filter((o) => o.commission != null)
-      .reduce((sum, o) => sum + o.commission! * o.qty, 0)
-
-    const totalPnl = shortPnl + longPnl + totalCommission
-
-    const closedOptions = options.filter((o) => CLOSED_STATUSES.includes(o.status))
-    const profitable = closedOptions.filter((o) => (computeProfit(o) ?? 0) > 0)
-    const winRate = closedOptions.length > 0
-      ? (profitable.length / closedOptions.length) * 100
-      : 0
-
-    const closedWithDays = closedOptions.filter((o) => o.close_date != null)
-    const avgDaysHeld = closedWithDays.length > 0
-      ? closedWithDays.reduce((sum, o) => sum + computeDaysHeld(o), 0) / closedWithDays.length
-      : 0
-
-    return { totalPnl, shortPnl, longPnl, totalCommission, winRate, avgDaysHeld }
-  }
+describe("computeStats", () => {
+  const NO_PRICES = new Map<string, number>()
 
   it("shortPnl: net premium from sell options", () => {
     const options = [
@@ -1191,7 +1166,7 @@ describe("stats aggregation logic", () => {
       makeOption({ Id: 4, buy_sell: "Buy", premium: 5.0, close_premium: 8.0, qty: 1, status: "Closed" }),
     ]
 
-    const stats = computeStatsFromOptions(options)
+    const stats = computeStats(options, NO_PRICES)
     // 150 + 300 + 150 = 600
     expect(stats.shortPnl).toBe(600)
   })
@@ -1208,7 +1183,7 @@ describe("stats aggregation logic", () => {
       makeOption({ Id: 4, buy_sell: "Sell", premium: 2.0, close_premium: 0.5, qty: 1, status: "Closed" }),
     ]
 
-    const stats = computeStatsFromOptions(options)
+    const stats = computeStats(options, NO_PRICES)
     // 300 + (-800) + 0 = -500
     expect(stats.longPnl).toBe(-500)
   })
@@ -1221,7 +1196,7 @@ describe("stats aggregation logic", () => {
       makeOption({ Id: 2, buy_sell: "Buy", strategy_type: "LEAPS", premium: 5.0, close_premium: 8.0, qty: 1, status: "Closed" }),
     ]
 
-    const stats = computeStatsFromOptions(options)
+    const stats = computeStats(options, NO_PRICES)
     // 150 + 300 = 450
     expect(stats.totalPnl).toBe(450)
     expect(stats.shortPnl).toBe(150)
@@ -1240,7 +1215,7 @@ describe("stats aggregation logic", () => {
       makeOption({ Id: 4, buy_sell: "Sell", premium: 1.5, close_premium: null, qty: 1, status: "Open" }),
     ]
 
-    const stats = computeStatsFromOptions(options)
+    const stats = computeStats(options, NO_PRICES)
     // 2 profitable out of 3 closed = 66.67%
     expect(stats.winRate).toBeCloseTo(66.67, 1)
   })
@@ -1252,7 +1227,7 @@ describe("stats aggregation logic", () => {
       makeOption({ Id: 3, opened: "2024-01-01", close_date: null, status: "Expired" }), // no close_date, excluded
     ]
 
-    const stats = computeStatsFromOptions(options)
+    const stats = computeStats(options, NO_PRICES)
     // (30 + 10) / 2 = 20
     expect(stats.avgDaysHeld).toBe(20)
   })
@@ -1267,16 +1242,16 @@ describe("stats aggregation logic", () => {
       makeOption({ Id: 3, buy_sell: "Sell", premium: 1.0, close_premium: null, qty: 1, status: "Expired" }),
     ]
 
-    const stats = computeStatsFromOptions(options)
+    const stats = computeStats(options, NO_PRICES)
     expect(stats.shortPnl).toBe(250) // 150 + 100 (expired)
     expect(stats.longPnl).toBe(300)
-    expect(stats.totalCommission).toBe(-5.50)
-    // totalPnl = 250 + 300 + (-5.50) = 544.50
+    expect(stats.totalCommission).toBe(5.50) // abs(-3.50) + abs(-2.00) = 5.50
+    // totalPnl = 250 + 300 - 5.50 = 544.50
     expect(stats.totalPnl).toBe(544.50)
   })
 
   it("empty options returns zeroes", () => {
-    const stats = computeStatsFromOptions([])
+    const stats = computeStats([], NO_PRICES)
     expect(stats.totalPnl).toBe(0)
     expect(stats.shortPnl).toBe(0)
     expect(stats.longPnl).toBe(0)

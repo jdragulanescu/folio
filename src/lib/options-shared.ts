@@ -171,6 +171,86 @@ export interface OptionsPageData {
 }
 
 // ---------------------------------------------------------------------------
+// Stats Computation
+// ---------------------------------------------------------------------------
+
+const CLOSED_STATUSES: OptionRecord["status"][] = [
+  "Closed",
+  "Expired",
+  "Assigned",
+  "Rolled",
+]
+
+/**
+ * Compute aggregate options statistics.
+ *
+ * @param symbolPrices - Map of ticker → current price, used for open long P&L
+ */
+export function computeStats(
+  options: OptionRecord[],
+  symbolPrices: Map<string, number>,
+): OptionsStats {
+  // Net P&L from sold options (credit received minus closing cost)
+  const shortPnl = options
+    .filter((o) => o.buy_sell === "Sell")
+    .reduce(
+      (sum, o) => sum + (computeProfit(o) ?? o.premium * o.qty * 100),
+      0,
+    )
+
+  // Net P&L from bought options
+  // - Closed: use computeProfit (close_premium - premium)
+  // - Open: use intrinsic value from current stock price
+  // - Assigned: excluded (value transfers to stock portfolio)
+  const longPnl = options
+    .filter((o) => o.buy_sell === "Buy" && o.status !== "Assigned")
+    .reduce((sum, o) => {
+      const profit = computeProfit(o)
+      if (profit != null) return sum + profit
+      // Open position: use intrinsic value if we have the stock price
+      const price = symbolPrices.get(o.ticker)
+      if (price != null) return sum + computeOpenLongPnl(o, price)
+      return sum
+    }, 0)
+
+  // Total commission as a positive cost (abs handles either sign convention)
+  const totalCommission = options
+    .filter((o) => o.commission != null)
+    .reduce((sum, o) => sum + Math.abs(o.commission!) * o.qty, 0)
+
+  const totalPnl = shortPnl + longPnl - totalCommission
+
+  // Win rate: profitable closed positions / total closed positions
+  const closedOptions = options.filter((o) =>
+    CLOSED_STATUSES.includes(o.status),
+  )
+  const profitable = closedOptions.filter(
+    (o) => (computeProfit(o) ?? 0) > 0,
+  )
+  const winRate =
+    closedOptions.length > 0
+      ? (profitable.length / closedOptions.length) * 100
+      : 0
+
+  // Average days held for closed positions
+  const closedWithDays = closedOptions.filter((o) => o.close_date != null)
+  const avgDaysHeld =
+    closedWithDays.length > 0
+      ? closedWithDays.reduce((sum, o) => sum + computeDaysHeld(o), 0) /
+        closedWithDays.length
+      : 0
+
+  return {
+    totalPnl,
+    shortPnl,
+    longPnl,
+    totalCommission,
+    winRate,
+    avgDaysHeld,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Roll Chain Inference
 // ---------------------------------------------------------------------------
 
@@ -427,20 +507,22 @@ export function buildPremiumByMonth(
     monthMap.set(m, { wheel: 0, leaps: 0 })
   }
 
-  // Accumulate premium by close_date month
+  // Accumulate realised profit by close_date month
   for (const opt of options) {
     if (!opt.close_date) continue // skip open positions
     const closeDate = new Date(opt.close_date)
     if (closeDate.getFullYear() !== year) continue
 
+    const profit = computeProfit(opt)
+    if (profit == null) continue
+
     const month = closeDate.getMonth()
     const entry = monthMap.get(month)!
 
-    const totalPremium = opt.premium * opt.qty * 100
     if (opt.strategy_type === "Wheel") {
-      entry.wheel += totalPremium
+      entry.wheel += profit
     } else if (opt.strategy_type === "LEAPS") {
-      entry.leaps += totalPremium
+      entry.leaps += profit
     }
     // Spread strategy falls through (not tracked separately in chart)
   }

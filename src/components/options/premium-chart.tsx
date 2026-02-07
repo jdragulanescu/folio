@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { isShortStrategy } from "@/lib/options-shared"
+import { computeProfit, isShortStrategy } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 
 interface PremiumChartProps {
@@ -74,8 +74,11 @@ export function PremiumChart({ allOptions, initialYear }: PremiumChartProps) {
       const closeDate = new Date(opt.close_date)
       if (closeDate.getFullYear() !== selectedYear) continue
 
+      const profit = computeProfit(opt)
+      if (profit == null) continue
+
       const monthIdx = closeDate.getMonth()
-      months[monthIdx].premium += opt.premium * opt.qty * 100
+      months[monthIdx].premium += profit
     }
 
     return months.map((m) => ({
