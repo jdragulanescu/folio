@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** One place to see the full portfolio -- stocks and bought options together with live prices -- without manually maintaining a spreadsheet.
-**Current focus:** Phase 3 and 4 complete, ready for Phase 5
+**Current focus:** Phases 3 & 4 complete and verified, ready for Phase 5
 
 ## Current Position
 
-Phase: 3 complete (3/3), 4 complete (4/4) (Transactions & Options Display)
-Plan: 04-04 complete (4/4 in Phase 4)
-Status: Phase 4 complete
-Last activity: 2026-02-07 -- Completed 04-04-PLAN.md (premium chart components)
+Phase: 4 of 8 complete (Phases 1-4 done), ready for Phase 5
+Plan: 4 of 4 in Phase 4 (all complete, verified 31/31 must-haves)
+Status: Phase 4 verified and complete
+Last activity: 2026-02-07 -- Phase 4 verified: transactions page + options dashboard
 
 Progress: [██████░░░░] 54%
 

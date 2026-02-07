@@ -39,22 +39,22 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Transactions
 
-- [ ] **TRAN-01**: Transaction history table with columns: Date, Symbol, Name, Type (Buy/Sell badge), Price, Shares, Amount, Platform, EPS
-- [ ] **TRAN-02**: Filter bar: symbol search, platform dropdown, date range picker, buy/sell toggle
-- [ ] **TRAN-03**: Sortable by any column, default sort by date descending
-- [ ] **TRAN-04**: Paginated (50 per page)
+- [x] **TRAN-01**: Transaction history table with columns: Date, Symbol, Name, Type (Buy/Sell badge), Price, Shares, Amount, Platform, EPS
+- [x] **TRAN-02**: Filter bar: symbol search, platform dropdown, date range picker, buy/sell toggle
+- [x] **TRAN-03**: Sortable by any column, default sort by date descending
+- [x] **TRAN-04**: Paginated (50 per page)
 - [ ] **TRAN-05**: Add Transaction form: symbol (autocomplete), type, price, shares, date, platform — amount auto-calculates
 - [ ] **TRAN-06**: Adding a new symbol via transaction form creates the symbol in the symbols table
 
 ### Options
 
-- [ ] **OPTS-01**: Options dashboard with tab group: Wheel | LEAPS | All
-- [ ] **OPTS-02**: Stat cards: Total Premium Collected, Capital Gains P&L (assigned), Win Rate, Avg Days Held
-- [ ] **OPTS-03**: Wheel open positions table: Ticker, Opened, C/P, Strike, Expiration, Days to Expiry, Delta, Premium, Collateral, Status
-- [ ] **OPTS-04**: Wheel open positions highlight rows where expiration is within 7 days (amber) or past (red)
-- [ ] **OPTS-05**: Wheel closed positions table: Ticker, Opened, Closed, C/P, Strike, Premium, Profit, Days Held, Return%, Annualised Return%, Status
-- [ ] **OPTS-06**: LEAPS table: Ticker, Opened, C/P, Strike, Current Price, Expiration, Days to Expiry, Premium Paid, Current P&L, Delta, IV%
-- [ ] **OPTS-07**: Monthly premium bar chart (X = month, Y = premium collected, grouped by Wheel vs LEAPS)
+- [x] **OPTS-01**: Options dashboard with tab group: Wheel | LEAPS | All
+- [x] **OPTS-02**: Stat cards: Total Premium Collected, Capital Gains P&L (assigned), Win Rate, Avg Days Held
+- [x] **OPTS-03**: Wheel open positions table: Ticker, Opened, C/P, Strike, Expiration, Days to Expiry, Delta, Premium, Collateral, Status
+- [x] **OPTS-04**: Wheel open positions highlight rows where expiration is within 7 days (amber) or past (red)
+- [x] **OPTS-05**: Wheel closed positions table: Ticker, Opened, Closed, C/P, Strike, Premium, Profit, Days Held, Return%, Annualised Return%, Status
+- [x] **OPTS-06**: LEAPS table: Ticker, Opened, C/P, Strike, Current Price, Expiration, Days to Expiry, Premium Paid, Current P&L, Delta, IV%
+- [x] **OPTS-07**: Monthly premium bar chart (X = month, Y = premium collected, grouped by Wheel vs LEAPS)
 - [ ] **OPTS-08**: Add Option form: ticker, strategy_type, call/put, buy/sell, strike, expiration, qty, premium (required); delta, IV, moneyness, collateral, notes (optional)
 - [ ] **OPTS-09**: Close/roll option workflow: update status, close date, close premium, profit — auto-calculate days held and return%
 - [ ] **OPTS-10**: Expiration calendar/timeline: visual display of upcoming expirations colour-coded by DTE (green >30d, amber 7-30d, red <7d)
@@ -146,31 +146,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-10 | Phase 2 | Complete |
 | DATA-11 | Phase 2 | Complete |
 | DATA-12 | Phase 1 | Complete |
-| PORT-01 | Phase 3 | Pending |
-| PORT-02 | Phase 3 | Pending |
-| PORT-03 | Phase 3 | Pending |
-| PORT-04 | Phase 3 | Pending |
-| PORT-05 | Phase 3 | Pending |
-| PORT-06 | Phase 3 | Pending |
+| PORT-01 | Phase 3 | Complete |
+| PORT-02 | Phase 3 | Complete |
+| PORT-03 | Phase 3 | Complete |
+| PORT-04 | Phase 3 | Complete |
+| PORT-05 | Phase 3 | Complete |
+| PORT-06 | Phase 3 | Complete |
 | PORT-07 | Phase 8 | Pending |
 | PORT-08 | Phase 8 | Pending |
-| PORT-09 | Phase 3 | Pending |
-| PORT-10 | Phase 3 | Pending |
+| PORT-09 | Phase 3 | Complete |
+| PORT-10 | Phase 3 | Complete |
 | PORT-11 | Phase 7 | Pending |
-| PORT-12 | Phase 3 | Pending |
-| TRAN-01 | Phase 4 | Pending |
-| TRAN-02 | Phase 4 | Pending |
-| TRAN-03 | Phase 4 | Pending |
-| TRAN-04 | Phase 4 | Pending |
+| PORT-12 | Phase 3 | Complete |
+| TRAN-01 | Phase 4 | Complete |
+| TRAN-02 | Phase 4 | Complete |
+| TRAN-03 | Phase 4 | Complete |
+| TRAN-04 | Phase 4 | Complete |
 | TRAN-05 | Phase 6 | Pending |
 | TRAN-06 | Phase 6 | Pending |
-| OPTS-01 | Phase 4 | Pending |
-| OPTS-02 | Phase 4 | Pending |
-| OPTS-03 | Phase 4 | Pending |
-| OPTS-04 | Phase 4 | Pending |
-| OPTS-05 | Phase 4 | Pending |
-| OPTS-06 | Phase 4 | Pending |
-| OPTS-07 | Phase 4 | Pending |
+| OPTS-01 | Phase 4 | Complete |
+| OPTS-02 | Phase 4 | Complete |
+| OPTS-03 | Phase 4 | Complete |
+| OPTS-04 | Phase 4 | Complete |
+| OPTS-05 | Phase 4 | Complete |
+| OPTS-06 | Phase 4 | Complete |
+| OPTS-07 | Phase 4 | Complete |
 | OPTS-08 | Phase 6 | Pending |
 | OPTS-09 | Phase 6 | Pending |
 | OPTS-10 | Phase 8 | Pending |

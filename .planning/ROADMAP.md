@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Data Migration** - NocoDB client, Python migration script, project scaffolding with dark theme shell
 - [x] **Phase 2: Live Pricing & Core Calculations** - FMP price sync, holdings calculation engine with Big.js, daily cron
 - [x] **Phase 3: Portfolio Overview** - Primary dashboard page with holdings table, summary cards, allocation charts, top movers
-- [ ] **Phase 4: Transactions & Options Display** - Transaction history and options dashboard (read-only views)
+- [x] **Phase 4: Transactions & Options Display** - Transaction history and options dashboard (read-only views)
 - [ ] **Phase 5: Dividends & Deposits Display** - Dividend tracking page and deposits page (read-only views)
 - [ ] **Phase 6: Write Operations** - Add forms and API routes for transactions, options, deposits, dividends, and option close/roll workflow
 - [ ] **Phase 7: Performance Analytics** - Portfolio value over time, monthly performance table, benchmark comparison
@@ -86,10 +86,10 @@ Plans:
 **Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 04-01-PLAN.md — Install dependencies, data assembly layer (transactions.ts, options.ts, format.ts), Server Action (Wave 1)
-- [ ] 04-02-PLAN.md — Transaction history page with sortable/filterable table and infinite scroll (Wave 2, depends on 04-01)
-- [ ] 04-03-PLAN.md — Options dashboard with tabs, stat cards, Wheel/LEAPS/All tables, roll chains, expiry highlighting (Wave 2, depends on 04-01)
-- [ ] 04-04-PLAN.md — Monthly premium bar chart with year selector and summary chart (Wave 3, depends on 04-03)
+- [x] 04-01-PLAN.md — Install dependencies, data assembly layer (transactions.ts, options.ts, format.ts), Server Action (Wave 1)
+- [x] 04-02-PLAN.md — Transaction history page with sortable/filterable table and infinite scroll (Wave 2, depends on 04-01)
+- [x] 04-03-PLAN.md — Options dashboard with tabs, stat cards, Wheel/LEAPS/All tables, roll chains, expiry highlighting (Wave 2, depends on 04-01)
+- [x] 04-04-PLAN.md — Monthly premium bar chart with year selector and summary chart (Wave 3, depends on 04-03)
 
 ### Phase 5: Dividends & Deposits Display
 **Goal**: Users can view dividend income tracking and deposit history with charts and breakdowns (read-only)
@@ -166,7 +166,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 | 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
 | 2. Live Pricing & Core Calculations | 3/3 | ✓ Complete | 2026-02-06 |
 | 3. Portfolio Overview | 3/3 | ✓ Complete | 2026-02-07 |
-| 4. Transactions & Options Display | 0/4 | Planned | - |
+| 4. Transactions & Options Display | 4/4 | ✓ Complete | 2026-02-07 |
 | 5. Dividends & Deposits Display | 0/2 | Not started | - |
 | 6. Write Operations | 0/4 | Not started | - |
 | 7. Performance Analytics | 0/2 | Not started | - |
