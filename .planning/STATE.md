@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: 4 of 8 complete (Phases 1-4 done), ready for Phase 5
 Plan: 4 of 4 in Phase 4 (all complete, verified 31/31 must-haves)
 Status: Phase 4 verified and complete
-Last activity: 2026-02-07 -- Quick task 005: full test coverage for format.ts, sync.ts, portfolio.ts (178 tests)
+Last activity: 2026-02-07 -- Quick task 006: premium chart groups by close_date (realized premium month)
 
 Progress: [██████░░░░] 54%
 
@@ -88,7 +88,7 @@ Recent decisions affecting current work:
 - [03-03]: Null sectors/strategies labelled "Unassigned", null platforms labelled "Unknown"
 - [04-01]: formatCurrency defaults to USD (was GBP) since portfolio holds US stocks
 - [04-01]: Roll chain matching uses call_put type + 5-day proximity heuristic
-- [04-01]: Premium chart groups by opened date month (when premium was received/paid)
+- [04-01]: ~~Premium chart groups by opened date month~~ (CORRECTED in quick-006: groups by close_date month)
 - [04-01]: LEAPS P&L from underlying stock intrinsic value (no free options pricing API)
 - [04-01]: avgDaysHeld excludes options with null days_held for accuracy
 - [04-02]: Radix Select uses "all" sentinel value (empty string not supported as item value)
@@ -109,6 +109,8 @@ Recent decisions affecting current work:
 - [quick-004]: Options P&L uses computeProfit() from options-shared for consistency across pages
 - [quick-005]: Exported pure helpers from sync.ts and portfolio.ts for testability (no behavior change)
 - [quick-005]: server-only mock pattern: vi.mock before import, mock all transitive server deps
+- [quick-006]: Premium chart and buildPremiumByMonth group by close_date (realized premium month), not opened date
+- [quick-006]: Options without close_date (open positions) excluded from premium chart
 
 ### Pending Todos
 
@@ -129,9 +131,10 @@ Recent decisions affecting current work:
 | 003 | Fix portfolio calcs, currency selector, tests | 2026-02-07 | a4a0a05 | [003-fix-portfolio-calcs-currency-tests](./quick/003-fix-portfolio-calcs-currency-tests/) |
 | 004 | Fix calculations consistency (negative sells, deposits, options P&L) | 2026-02-07 | 96136b3 | [004-fix-calculations-consistency](./quick/004-fix-calculations-consistency/) |
 | 005 | Full test coverage for format.ts, sync.ts, portfolio.ts | 2026-02-07 | 3182318 | [005-full-test-coverage-frontend-and-backend](./quick/005-full-test-coverage-frontend-and-backend/) |
+| 006 | Options premium chart groups by close_date | 2026-02-07 | 07160bd | [006-options-premium-group-by-close-date](./quick/006-options-premium-group-by-close-date/) |
 
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed quick task 005 (full test coverage)
+Stopped at: Completed quick task 006 (premium chart groups by close_date)
 Resume file: None
