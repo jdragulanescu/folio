@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** One place to see the full portfolio -- stocks and bought options together with live prices -- without manually maintaining a spreadsheet.
-**Current focus:** Phase 3 complete, Phase 4 in progress
+**Current focus:** Phase 3 and 4 complete, ready for Phase 5
 
 ## Current Position
 
-Phase: 3 complete (3/3), 4 of 8 in progress (Transactions & Options Display)
-Plan: 03-03 complete (3/3 in Phase 3), 04-03 complete (3 of 4 in Phase 4)
-Status: In progress
-Last activity: 2026-02-07 -- Completed 03-03-PLAN.md (summary cards, allocation charts, top movers, broker breakdown)
+Phase: 3 complete (3/3), 4 complete (4/4) (Transactions & Options Display)
+Plan: 04-04 complete (4/4 in Phase 4)
+Status: Phase 4 complete
+Last activity: 2026-02-07 -- Completed 04-04-PLAN.md (premium chart components)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 54%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 4min
-- Total execution time: 0.75 hours
+- Total execution time: 0.77 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [█████░░░░░] 50%
 | 01 | 3/3 | 15min | 5min |
 | 02 | 3/3 | 9min | 3min |
 | 03 | 3/3 | 15min | 5min |
-| 04 | 3/4 | 10min | 3min |
+| 04 | 4/4 | 11min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (4min), 04-02 (4min), 03-02 (7min), 04-03 (2min), 03-03 (5min)
+- Last 5 plans: 04-02 (4min), 03-02 (7min), 04-03 (2min), 03-03 (5min), 04-04 (1min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -97,6 +97,8 @@ Recent decisions affecting current work:
 - [04-03]: Stat cards placed above tabs to always show overall totals regardless of active tab
 - [04-03]: LEAPS table uses flat rows (no roll chain expansion) for simplicity
 - [04-03]: All tab uses flat OptionsRow[] without roll chain grouping for unified view
+- [04-04]: buildPremiumByMonth already returns abbreviated month names (not ISO dates) -- use directly
+- [04-04]: Available years always include current year even with no data
 
 ### Pending Todos
 
@@ -118,5 +120,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed 03-03-PLAN.md (summary cards, allocation charts, top movers, broker breakdown)
+Stopped at: Completed 04-04-PLAN.md (premium chart components -- Phase 4 complete)
 Resume file: None
