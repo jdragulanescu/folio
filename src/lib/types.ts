@@ -126,17 +126,15 @@ export interface OptionRecord {
   Id: number
   ticker: string
   opened: string
-  strategy_type: "Wheel" | "LEAPS" | "Spread" | "Collar" | "VPCS" | "BET"
+  strategy_type: "Wheel" | "LEAPS" | "Collar" | "VPCS" | "BET" | "PMCC" | "Hedge"
   call_put: "Call" | "Put"
   buy_sell: "Buy" | "Sell"
   expiration: string
   strike: number
   delta: number | null
   iv_pct: number | null
-  moneyness: "OTM" | "ATM" | "ITM" | null
   qty: number
   premium: number
-  collateral: number | null
   status: "Open" | "Closed" | "Expired" | "Rolled" | "Assigned"
   close_date: string | null
   close_premium: number | null

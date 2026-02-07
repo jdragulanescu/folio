@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { Label, Pie, PieChart } from "recharts"
 import type { DisplayHolding } from "@/lib/portfolio"
 import type { OptionRecord } from "@/lib/types"
+import { computeProfit } from "@/lib/options-shared"
 import { formatCurrency, formatPercent, pnlClassName } from "@/lib/format"
 import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import {
@@ -43,6 +44,7 @@ interface BrokerData {
   optionsCount: number
   marketValue: number
   unrealisedPnl: number
+  optionsPnl: number
   weightPct: number
 }
 
@@ -57,7 +59,7 @@ export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBre
   const { brokers, chartData, chartConfig } = useMemo(() => {
     const groups = new Map<
       string,
-      { marketValue: number; unrealisedPnl: number; count: number; optionsCount: number }
+      { marketValue: number; unrealisedPnl: number; optionsPnl: number; count: number; optionsCount: number }
     >()
     let total = 0
 
@@ -67,6 +69,7 @@ export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBre
       const existing = groups.get(platform) ?? {
         marketValue: 0,
         unrealisedPnl: 0,
+        optionsPnl: 0,
         count: 0,
         optionsCount: 0,
       }
@@ -77,17 +80,24 @@ export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBre
       total += h.marketValue
     }
 
-    // Add options to broker aggregation
+    // Add options to broker aggregation (count only open, P&L from all with profit)
     for (const o of options) {
       const platform = o.platform ?? "IBKR"
       const existing = groups.get(platform) ?? {
         marketValue: 0,
         unrealisedPnl: 0,
+        optionsPnl: 0,
         count: 0,
         optionsCount: 0,
       }
-      existing.optionsCount += 1
-      // Don't add to marketValue again (open long options already in holdings)
+      if (o.status === "Open") existing.optionsCount += 1
+      // Realised options P&L net of commission
+      const profit = computeProfit(o)
+      if (profit != null) {
+        const commission = o.commission != null ? Math.abs(o.commission) * o.qty : 0
+        existing.optionsPnl += profit - commission
+      }
+      // Don't add to marketValue (open long options already in holdings)
       groups.set(platform, existing)
     }
 
@@ -102,6 +112,7 @@ export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBre
       optionsCount: data.optionsCount,
       marketValue: data.marketValue,
       unrealisedPnl: data.unrealisedPnl,
+      optionsPnl: data.optionsPnl,
       weightPct: total !== 0 ? (data.marketValue / total) * 100 : 0,
     }))
 
@@ -141,7 +152,8 @@ export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBre
                   <th className="pb-2 text-right text-xs font-medium">Holdings</th>
                   <th className="pb-2 text-right text-xs font-medium">Options</th>
                   <th className="pb-2 text-right text-xs font-medium">Value</th>
-                  <th className="pb-2 text-right text-xs font-medium">P&L</th>
+                  <th className="pb-2 text-right text-xs font-medium">Unrealised</th>
+                  <th className="pb-2 text-right text-xs font-medium">Options P&L</th>
                   <th className="pb-2 text-right text-xs font-medium">Weight</th>
                 </tr>
               </thead>
@@ -162,6 +174,11 @@ export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBre
                       className={`py-2 text-right tabular-nums text-sm ${pnlClassName(b.unrealisedPnl)}`}
                     >
                       {fc(b.unrealisedPnl)}
+                    </td>
+                    <td
+                      className={`py-2 text-right tabular-nums text-sm ${pnlClassName(b.optionsPnl)}`}
+                    >
+                      {fc(b.optionsPnl)}
                     </td>
                     <td className="py-2 text-right tabular-nums text-sm">
                       {formatPercent(b.weightPct).replace("+", "")}

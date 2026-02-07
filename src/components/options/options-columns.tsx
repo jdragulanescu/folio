@@ -14,7 +14,7 @@ import {
   pnlClassName,
 } from "@/lib/format"
 import type { OptionsRow, LeapsDisplayRow } from "@/lib/options-shared"
-import { computeProfit, computeDaysHeld, computeReturnPct } from "@/lib/options-shared"
+import { computeProfit, computeDaysHeld, computeReturnPct, computeCollateral } from "@/lib/options-shared"
 
 // ---------------------------------------------------------------------------
 // Reusable Sortable Header
@@ -239,15 +239,6 @@ export const shortColumns: ColumnDef<OptionsRow>[] = [
     ),
   },
   {
-    accessorFn: (row) => row.option.moneyness,
-    id: "moneyness",
-    header: (ctx) => <SortableHeader {...ctx} label="Moneyness" />,
-    cell: ({ row }) => {
-      const value = row.original.option.moneyness
-      return value ? <Badge variant="secondary">{value}</Badge> : "\u2014"
-    },
-  },
-  {
     accessorFn: (row) => {
       const opt = row.option
       return row.isChainHead
@@ -290,17 +281,18 @@ export const shortColumns: ColumnDef<OptionsRow>[] = [
     },
   },
   {
-    accessorFn: (row) => row.option.collateral,
+    accessorFn: (row) => computeCollateral(row.option),
     id: "collateral",
     sortingFn: nullBottomSort,
     header: (ctx) => <SortableHeader {...ctx} label="Collateral" />,
-    cell: ({ row }) => (
-      <span className="tabular-nums text-right">
-        {row.original.option.collateral != null
-          ? formatCurrency(row.original.option.collateral)
-          : "\u2014"}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const value = computeCollateral(row.original.option)
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
   },
   {
     accessorFn: (row) => row.option.commission != null ? row.option.commission * row.option.qty : null,

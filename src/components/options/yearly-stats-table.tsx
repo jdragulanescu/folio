@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/format"
-import { isShortStrategy, computeProfit, computeDaysHeld, computeReturnPct } from "@/lib/options-shared"
+import { isShortStrategy, computeProfit, computeDaysHeld, computeReturnPct, computeCollateral } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 
 interface YearlyStatsTableProps {
@@ -49,8 +49,11 @@ export function YearlyStatsTable({ options }: YearlyStatsTableProps) {
       const count = opts.length
 
       const profitYields = opts
-        .filter((o) => o.collateral != null && o.collateral > 0 && computeProfit(o) != null)
-        .map((o) => (computeProfit(o)! / o.collateral!) * 100)
+        .filter((o) => {
+          const coll = computeCollateral(o)
+          return coll != null && coll > 0 && computeProfit(o) != null
+        })
+        .map((o) => (computeProfit(o)! / computeCollateral(o)!) * 100)
       const avgProfitYield =
         profitYields.length > 0
           ? profitYields.reduce((a, b) => a + b, 0) / profitYields.length
@@ -64,7 +67,7 @@ export function YearlyStatsTable({ options }: YearlyStatsTableProps) {
       const avgReturn =
         returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0
 
-      const collaterals = opts.filter((o) => o.collateral != null).map((o) => o.collateral!)
+      const collaterals = opts.map((o) => computeCollateral(o)).filter((v): v is number => v != null)
       const avgCollateral =
         collaterals.length > 0 ? collaterals.reduce((a, b) => a + b, 0) / collaterals.length : 0
 
