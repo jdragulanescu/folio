@@ -50,7 +50,9 @@ export function PremiumChart({ allOptions, initialYear }: PremiumChartProps) {
   const availableYears = useMemo(() => {
     const years = new Set<number>()
     for (const opt of shortOptions) {
-      years.add(new Date(opt.opened).getFullYear())
+      if (opt.close_date) {
+        years.add(new Date(opt.close_date).getFullYear())
+      }
     }
     years.add(new Date().getFullYear())
     return Array.from(years).sort((a, b) => b - a)
@@ -65,18 +67,15 @@ export function PremiumChart({ allOptions, initialYear }: PremiumChartProps) {
     const months = MONTH_NAMES.map((name) => ({
       month: name,
       premium: 0,
-      collateral: 0,
     }))
 
     for (const opt of shortOptions) {
-      const opened = new Date(opt.opened)
-      if (opened.getFullYear() !== selectedYear) continue
+      if (!opt.close_date) continue
+      const closeDate = new Date(opt.close_date)
+      if (closeDate.getFullYear() !== selectedYear) continue
 
-      const monthIdx = opened.getMonth()
+      const monthIdx = closeDate.getMonth()
       months[monthIdx].premium += opt.premium * opt.qty * 100
-      if (opt.collateral != null) {
-        months[monthIdx].collateral += opt.collateral
-      }
     }
 
     return months.map((m) => ({
