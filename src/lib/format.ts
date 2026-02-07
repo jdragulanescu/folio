@@ -42,6 +42,22 @@ export function formatNumber(value: number, dp: number = 2): string {
 }
 
 /**
+ * Format share count: integers with no decimals, fractional with up to 4.
+ */
+export function formatShares(value: number): string {
+  if (Math.abs(value - Math.round(value)) < 0.0001) {
+    return new Intl.NumberFormat("en-GB", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+  return new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(value)
+}
+
+/**
  * Format a large number in compact notation (e.g., "$1.2B", "$456M").
  * Useful for market cap display.
  */

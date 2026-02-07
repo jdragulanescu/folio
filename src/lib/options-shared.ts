@@ -11,6 +11,24 @@ import { differenceInDays } from "date-fns"
 import type { OptionRecord } from "./types"
 
 // ---------------------------------------------------------------------------
+// Strategy Constants
+// ---------------------------------------------------------------------------
+
+export const SHORT_STRATEGIES = ["Wheel", "Collar", "VPCS"] as const
+export const LONG_STRATEGIES = ["LEAPS", "BET"] as const
+
+export type ShortStrategy = (typeof SHORT_STRATEGIES)[number]
+export type LongStrategy = (typeof LONG_STRATEGIES)[number]
+
+export function isShortStrategy(type: string): type is ShortStrategy {
+  return (SHORT_STRATEGIES as readonly string[]).includes(type)
+}
+
+export function isLongStrategy(type: string): type is LongStrategy {
+  return (LONG_STRATEGIES as readonly string[]).includes(type)
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
