@@ -4,6 +4,7 @@ import {
   computeProfit,
   computeDaysHeld,
   computeReturnPct,
+  computeCollateral,
   computeLeapsDisplay,
   inferRollChains,
   buildPremiumByMonth,
@@ -28,10 +29,8 @@ function makeOption(overrides: Partial<OptionRecord> & { Id: number }): OptionRe
     strike: 180,
     delta: null,
     iv_pct: null,
-    moneyness: null,
     qty: 1,
     premium: 3.5,
-    collateral: 18000,
     status: "Closed",
     close_date: "2024-02-10",
     close_premium: 0.5,
@@ -48,29 +47,31 @@ function makeOption(overrides: Partial<OptionRecord> & { Id: number }): OptionRe
 // ============================================================================
 
 describe("isShortStrategy", () => {
-  it("returns true for Wheel, Collar, VPCS", () => {
+  it("returns true for Wheel, Collar, VPCS, PMCC", () => {
     expect(isShortStrategy("Wheel")).toBe(true)
     expect(isShortStrategy("Collar")).toBe(true)
     expect(isShortStrategy("VPCS")).toBe(true)
+    expect(isShortStrategy("PMCC")).toBe(true)
   })
 
-  it("returns false for LEAPS, BET, Spread", () => {
+  it("returns false for LEAPS, BET, Hedge", () => {
     expect(isShortStrategy("LEAPS")).toBe(false)
     expect(isShortStrategy("BET")).toBe(false)
-    expect(isShortStrategy("Spread")).toBe(false)
+    expect(isShortStrategy("Hedge")).toBe(false)
   })
 })
 
 describe("isLongStrategy", () => {
-  it("returns true for LEAPS, BET", () => {
+  it("returns true for LEAPS, BET, Hedge", () => {
     expect(isLongStrategy("LEAPS")).toBe(true)
     expect(isLongStrategy("BET")).toBe(true)
+    expect(isLongStrategy("Hedge")).toBe(true)
   })
 
-  it("returns false for Wheel, Collar, VPCS, Spread", () => {
+  it("returns false for Wheel, Collar, VPCS, PMCC", () => {
     expect(isLongStrategy("Wheel")).toBe(false)
     expect(isLongStrategy("Collar")).toBe(false)
-    expect(isLongStrategy("Spread")).toBe(false)
+    expect(isLongStrategy("PMCC")).toBe(false)
   })
 })
 
@@ -290,13 +291,14 @@ describe("computeReturnPct", () => {
       Id: 1,
       buy_sell: "Sell",
       strategy_type: "Wheel",
+      strike: 180,
       premium: 3.0,
       close_premium: 0.5,
       qty: 1,
-      collateral: 18000,
       opened: "2024-01-01",
       close_date: "2024-01-31",
     })
+    // collateral = 180 × 1 × 100 = 18000
     // profit = (3.0 - 0.5) × 100 = 250
     // daysHeld = 30
     // return = (250 / 18000) × (365 / 30) × 100 = 16.90%
@@ -304,33 +306,35 @@ describe("computeReturnPct", () => {
     expect(result).toBeCloseTo(16.9, 0)
   })
 
-  it("short option: returns null when collateral is null", () => {
+  it("short strategy with buy_sell=Buy: returns null (no collateral)", () => {
     const opt = makeOption({
       Id: 2,
-      buy_sell: "Sell",
+      buy_sell: "Buy",
       strategy_type: "Wheel",
       premium: 2.0,
       close_premium: 0.5,
       qty: 1,
-      collateral: null,
       opened: "2024-01-01",
       close_date: "2024-01-31",
     })
+    // strategy_type = "Wheel" (short) → computeCollateral returns null (buy_sell="Buy")
+    // Short strategy path returns null when collateral is null
     expect(computeReturnPct(opt)).toBeNull()
   })
 
-  it("short option: returns null when collateral is 0", () => {
+  it("short option: returns null when strike is 0 (collateral is 0)", () => {
     const opt = makeOption({
       Id: 3,
       buy_sell: "Sell",
       strategy_type: "Wheel",
+      strike: 0,
       premium: 2.0,
       close_premium: 0.5,
       qty: 1,
-      collateral: 0,
       opened: "2024-01-01",
       close_date: "2024-01-31",
     })
+    // collateral = 0 × 1 × 100 = 0 → returns null
     expect(computeReturnPct(opt)).toBeNull()
   })
 
@@ -801,7 +805,6 @@ describe("inferRollChains", () => {
       close_premium: 1.57,
       qty: 20,
       delta: 0.32,
-      collateral: 3000,
     })
     const leg2 = makeOption({
       Id: 2,
@@ -815,7 +818,6 @@ describe("inferRollChains", () => {
       qty: 20,
       delta: 0.62,
       strike: 13,
-      collateral: 26000,
     })
     const leg3 = makeOption({
       Id: 3,
@@ -828,7 +830,6 @@ describe("inferRollChains", () => {
       close_premium: 0.51,
       qty: 20,
       delta: 0.71,
-      collateral: 24000,
     })
 
     const { chains, standalone } = inferRollChains([leg1, leg2, leg3])
@@ -971,50 +972,60 @@ describe("buildPremiumByMonth", () => {
     expect(result[11]).toEqual({ month: "Dec", wheel: 0, leaps: 0 })
   })
 
-  it("accumulates Wheel premium in correct month", () => {
+  it("accumulates Wheel premium in correct month (by close_date)", () => {
     const opt = makeOption({
       Id: 1,
       strategy_type: "Wheel",
-      opened: "2024-03-15",
+      opened: "2024-02-15",
+      close_date: "2024-03-20",
+      status: "Closed",
       premium: 2.5,
       qty: 2,
     })
     const result = buildPremiumByMonth([opt], 2024)
 
-    // March = index 2, premium = 2.5 × 2 × 100 = 500
+    // March (close_date month) = index 2, premium = 2.5 × 2 × 100 = 500
     expect(result[2].wheel).toBe(500)
     expect(result[2].leaps).toBe(0)
+    // February (opened month) should be 0
+    expect(result[1].wheel).toBe(0)
   })
 
-  it("accumulates LEAPS premium in correct month", () => {
+  it("accumulates LEAPS premium in correct month (by close_date)", () => {
     const opt = makeOption({
       Id: 2,
       strategy_type: "LEAPS",
       buy_sell: "Buy",
-      opened: "2024-06-01",
+      opened: "2024-04-01",
+      close_date: "2024-06-15",
+      status: "Closed",
       premium: 8.0,
       qty: 1,
     })
     const result = buildPremiumByMonth([opt], 2024)
 
-    // June = index 5, premium = 8.0 × 1 × 100 = 800
+    // June (close_date month) = index 5, premium = 8.0 × 1 × 100 = 800
     expect(result[5].leaps).toBe(800)
     expect(result[5].wheel).toBe(0)
+    // April (opened month) should be 0
+    expect(result[3].leaps).toBe(0)
   })
 
-  it("filters by year", () => {
-    const opt2023 = makeOption({ Id: 1, opened: "2023-06-15", strategy_type: "Wheel", premium: 5.0, qty: 1 })
-    const opt2024 = makeOption({ Id: 2, opened: "2024-06-15", strategy_type: "Wheel", premium: 3.0, qty: 1 })
+  it("filters by close_date year", () => {
+    const opt2023 = makeOption({ Id: 1, opened: "2023-05-01", close_date: "2023-07-15", status: "Closed", strategy_type: "Wheel", premium: 5.0, qty: 1 })
+    const opt2024 = makeOption({ Id: 2, opened: "2024-05-01", close_date: "2024-06-20", status: "Closed", strategy_type: "Wheel", premium: 3.0, qty: 1 })
 
     const result = buildPremiumByMonth([opt2023, opt2024], 2024)
-    expect(result[5].wheel).toBe(300) // Only 2024 option
+    expect(result[5].wheel).toBe(300) // Only 2024 close_date option (June)
   })
 
-  it("Spread strategy is not tracked", () => {
+  it("VPCS strategy is not tracked separately in chart", () => {
     const opt = makeOption({
       Id: 1,
-      strategy_type: "Spread",
-      opened: "2024-03-15",
+      strategy_type: "VPCS",
+      opened: "2024-02-15",
+      close_date: "2024-03-20",
+      status: "Closed",
       premium: 5.0,
       qty: 1,
     })
@@ -1023,13 +1034,53 @@ describe("buildPremiumByMonth", () => {
     expect(result[2].leaps).toBe(0)
   })
 
-  it("multiple options in same month accumulate", () => {
-    const opt1 = makeOption({ Id: 1, strategy_type: "Wheel", opened: "2024-03-01", premium: 2.0, qty: 1 })
-    const opt2 = makeOption({ Id: 2, strategy_type: "Wheel", opened: "2024-03-15", premium: 3.0, qty: 1 })
+  it("multiple options in same close_date month accumulate", () => {
+    const opt1 = makeOption({ Id: 1, strategy_type: "Wheel", opened: "2024-01-15", close_date: "2024-03-05", status: "Closed", premium: 2.0, qty: 1 })
+    const opt2 = makeOption({ Id: 2, strategy_type: "Wheel", opened: "2024-02-10", close_date: "2024-03-20", status: "Closed", premium: 3.0, qty: 1 })
 
     const result = buildPremiumByMonth([opt1, opt2], 2024)
-    // 2.0 × 100 + 3.0 × 100 = 500
+    // 2.0 × 100 + 3.0 × 100 = 500 (both closed in March)
     expect(result[2].wheel).toBe(500)
+  })
+
+  it("skips options without close_date (open positions)", () => {
+    const openOpt = makeOption({
+      Id: 1,
+      strategy_type: "Wheel",
+      opened: "2024-03-15",
+      close_date: null,
+      status: "Open",
+      premium: 5.0,
+      qty: 1,
+    })
+    const closedOpt = makeOption({
+      Id: 2,
+      strategy_type: "Wheel",
+      opened: "2024-02-01",
+      close_date: "2024-03-10",
+      status: "Closed",
+      premium: 2.0,
+      qty: 1,
+    })
+    const result = buildPremiumByMonth([openOpt, closedOpt], 2024)
+    // Only the closed option's premium should appear (200), not the open one (500)
+    expect(result[2].wheel).toBe(200)
+  })
+
+  it("groups by close_date month, not opened month", () => {
+    const opt = makeOption({
+      Id: 1,
+      strategy_type: "Wheel",
+      opened: "2024-01-15",
+      close_date: "2024-04-10",
+      status: "Closed",
+      premium: 3.0,
+      qty: 1,
+    })
+    const result = buildPremiumByMonth([opt], 2024)
+    // Should appear in April (index 3), NOT January (index 0)
+    expect(result[0].wheel).toBe(0)  // January = 0
+    expect(result[3].wheel).toBe(300)  // April = 300
   })
 })
 
@@ -1270,8 +1321,11 @@ describe("yearly stats computation", () => {
 
     for (const [year, opts] of byYear) {
       const profitYields = opts
-        .filter((o) => o.collateral != null && o.collateral > 0 && computeProfit(o) != null)
-        .map((o) => (computeProfit(o)! / o.collateral!) * 100)
+        .filter((o) => {
+          const coll = computeCollateral(o)
+          return coll != null && coll > 0 && computeProfit(o) != null
+        })
+        .map((o) => (computeProfit(o)! / computeCollateral(o)!) * 100)
       const avgProfitYield = profitYields.length > 0
         ? profitYields.reduce((a, b) => a + b, 0) / profitYields.length
         : 0
@@ -1286,7 +1340,7 @@ describe("yearly stats computation", () => {
         ? returns.reduce((a, b) => a + b, 0) / returns.length
         : 0
 
-      const collaterals = opts.filter((o) => o.collateral != null).map((o) => o.collateral!)
+      const collaterals = opts.map((o) => computeCollateral(o)).filter((v): v is number => v != null)
       const avgCollateral = collaterals.length > 0
         ? collaterals.reduce((a, b) => a + b, 0) / collaterals.length
         : 0
@@ -1317,10 +1371,10 @@ describe("yearly stats computation", () => {
         status: "Closed",
         opened: "2024-03-01",
         close_date: "2024-03-31",
+        strike: 150,
         premium: 3.0,
         close_premium: 0.5,
         qty: 1,
-        collateral: 15000,
         iv_pct: 0.35,
         delta: 0.25,
       }),
@@ -1330,10 +1384,10 @@ describe("yearly stats computation", () => {
         status: "Expired",
         opened: "2024-06-01",
         close_date: "2024-06-21",
+        strike: 100,
         premium: 2.0,
         close_premium: null,
         qty: 1,
-        collateral: 10000,
         iv_pct: 0.45,
         delta: 0.30,
       }),
@@ -1344,6 +1398,7 @@ describe("yearly stats computation", () => {
     expect(stats[0].year).toBe(2024)
     expect(stats[0].count).toBe(2)
 
+    // collateral: opt1 = 150×1×100 = 15000, opt2 = 100×1×100 = 10000
     // profitYield: opt1 = (250/15000)*100 = 1.667%, opt2 = (200/10000)*100 = 2%
     // avg = (1.667 + 2) / 2 = 1.833%
     expect(stats[0].avgProfitYield).toBeCloseTo(1.833, 1)
@@ -1391,7 +1446,7 @@ describe("yearly stats computation", () => {
         premium: 2.0,
         close_premium: 0.5,
         qty: 1,
-        collateral: 10000,
+        strike: 100,
         iv_pct: 0.6465,
         delta: 0.20,
       }),
