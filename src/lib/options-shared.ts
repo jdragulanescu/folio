@@ -14,8 +14,8 @@ import type { OptionRecord } from "./types"
 // Strategy Constants
 // ---------------------------------------------------------------------------
 
-export const SHORT_STRATEGIES = ["Wheel", "Collar", "VPCS"] as const
-export const LONG_STRATEGIES = ["LEAPS", "BET"] as const
+export const SHORT_STRATEGIES = ["Wheel", "Collar", "VPCS", "PMCC"] as const
+export const LONG_STRATEGIES = ["LEAPS", "BET", "Hedge"] as const
 
 export type ShortStrategy = (typeof SHORT_STRATEGIES)[number]
 export type LongStrategy = (typeof LONG_STRATEGIES)[number]
@@ -33,8 +33,22 @@ export function isLongStrategy(type: string): type is LongStrategy {
 // ---------------------------------------------------------------------------
 // These replace the pre-calculated DB fields (profit, days_held, return_pct,
 // annualised_return_pct). Premium and close_premium are per-share; collateral
-// is already total.
+// is computed from strike/outer_strike/qty.
 // ---------------------------------------------------------------------------
+
+/**
+ * Compute collateral from strike, outer_strike, and qty.
+ * - Spread (outer_strike present): |strike - outer_strike| × qty × 100
+ * - Cash-secured (no outer_strike): strike × qty × 100
+ * Only meaningful for short (sell) strategies.
+ */
+export function computeCollateral(opt: OptionRecord): number | null {
+  if (opt.buy_sell !== "Sell") return null
+  if (opt.outer_strike != null) {
+    return Math.abs(opt.strike - opt.outer_strike) * opt.qty * 100
+  }
+  return opt.strike * opt.qty * 100
+}
 
 /**
  * Calculate profit from raw option fields.
@@ -90,8 +104,9 @@ export function computeReturnPct(opt: OptionRecord): number | null {
   if (profit == null || daysHeld <= 0) return null
 
   if (isShortStrategy(opt.strategy_type)) {
-    if (opt.collateral == null || opt.collateral <= 0) return null
-    return (profit / opt.collateral) * (365 / daysHeld) * 100
+    const collateral = computeCollateral(opt)
+    if (collateral == null || collateral <= 0) return null
+    return (profit / collateral) * (365 / daysHeld) * 100
   }
   // Long options: profit yield as percentage
   const costBasis = opt.premium * opt.qty * 100
@@ -397,8 +412,9 @@ const MONTH_NAMES = [
 /**
  * Build monthly premium chart data for a given year.
  *
- * Groups options by the month of their `opened` date. For each month,
- * sums premium separately for Wheel and LEAPS strategy types.
+ * Groups options by the month of their `close_date` (when premium was
+ * realized). Options without a close_date (open positions) are excluded.
+ * Sums premium separately for Wheel and LEAPS strategy types.
  * Zero-fills months with no data. Returns 12 entries (Jan-Dec).
  */
 export function buildPremiumByMonth(
@@ -411,12 +427,13 @@ export function buildPremiumByMonth(
     monthMap.set(m, { wheel: 0, leaps: 0 })
   }
 
-  // Accumulate premium by month
+  // Accumulate premium by close_date month
   for (const opt of options) {
-    const opened = new Date(opt.opened)
-    if (opened.getFullYear() !== year) continue
+    if (!opt.close_date) continue // skip open positions
+    const closeDate = new Date(opt.close_date)
+    if (closeDate.getFullYear() !== year) continue
 
-    const month = opened.getMonth()
+    const month = closeDate.getMonth()
     const entry = monthMap.get(month)!
 
     const totalPremium = opt.premium * opt.qty * 100
