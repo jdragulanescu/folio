@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Data Migration** - NocoDB client, Python migration script, project scaffolding with dark theme shell
 - [x] **Phase 2: Live Pricing & Core Calculations** - FMP price sync, holdings calculation engine with Big.js, daily cron
-- [ ] **Phase 3: Portfolio Overview** - Primary dashboard page with holdings table, summary cards, allocation charts, top movers
+- [x] **Phase 3: Portfolio Overview** - Primary dashboard page with holdings table, summary cards, allocation charts, top movers
 - [ ] **Phase 4: Transactions & Options Display** - Transaction history and options dashboard (read-only views)
 - [ ] **Phase 5: Dividends & Deposits Display** - Dividend tracking page and deposits page (read-only views)
 - [ ] **Phase 6: Write Operations** - Add forms and API routes for transactions, options, deposits, dividends, and option close/roll workflow
@@ -69,9 +69,9 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Install dependencies, data assembly layer (portfolio.ts + format.ts), and page shell (Wave 1)
-- [ ] 03-02-PLAN.md — Holdings table with TanStack Table (sort, filter, column visibility) and symbol detail page (Wave 2, depends on 03-01)
-- [ ] 03-03-PLAN.md — Summary cards, allocation donut charts, top movers, and broker breakdown (Wave 2, depends on 03-01)
+- [x] 03-01-PLAN.md — Install dependencies, data assembly layer (portfolio.ts + format.ts), and page shell (Wave 1)
+- [x] 03-02-PLAN.md — Holdings table with TanStack Table (sort, filter, column visibility) and symbol detail page (Wave 2, depends on 03-01)
+- [x] 03-03-PLAN.md — Summary cards, allocation donut charts, top movers, and broker breakdown (Wave 2, depends on 03-01)
 
 ### Phase 4: Transactions & Options Display
 **Goal**: Users can browse full transaction history and the complete options dashboard with Wheel and LEAPS views (read-only)
@@ -165,7 +165,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 and can be worked on in parallel.
 |-------|----------------|--------|-----------|
 | 1. Foundation & Data Migration | 3/3 | ✓ Complete | 2026-02-06 |
 | 2. Live Pricing & Core Calculations | 3/3 | ✓ Complete | 2026-02-06 |
-| 3. Portfolio Overview | 0/3 | Not started | - |
+| 3. Portfolio Overview | 3/3 | Complete | 2026-02-07 |
 | 4. Transactions & Options Display | 0/4 | Planned | - |
 | 5. Dividends & Deposits Display | 0/2 | Not started | - |
 | 6. Write Operations | 0/4 | Not started | - |

@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** One place to see the full portfolio -- stocks and bought options together with live prices -- without manually maintaining a spreadsheet.
-**Current focus:** Phases 3 & 4 executing in parallel
+**Current focus:** Phase 3 complete, Phase 4 in progress
 
 ## Current Position
 
-Phase: 3 & 4 of 8 (Portfolio Overview + Transactions & Options Display)
-Plan: 04-03 complete (3 of 4 in Phase 4), 03-02 complete (2 of 3 in Phase 3)
+Phase: 3 complete (3/3), 4 of 8 in progress (Transactions & Options Display)
+Plan: 03-03 complete (3/3 in Phase 3), 04-03 complete (3 of 4 in Phase 4)
 Status: In progress
-Last activity: 2026-02-07 -- Completed 04-03-PLAN.md (options dashboard UI)
+Last activity: 2026-02-07 -- Completed 03-03-PLAN.md (summary cards, allocation charts, top movers, broker breakdown)
 
-Progress: [███████░░░] 68%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: 4min
-- Total execution time: 0.70 hours
+- Total execution time: 0.75 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [███████░░░] 68%
 |-------|-------|-------|----------|
 | 01 | 3/3 | 15min | 5min |
 | 02 | 3/3 | 9min | 3min |
-| 03 | 2/3 | 10min | 5min |
+| 03 | 3/3 | 15min | 5min |
 | 04 | 3/4 | 10min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (3min), 04-01 (4min), 04-02 (4min), 03-02 (7min), 04-03 (2min)
+- Last 5 plans: 04-01 (4min), 04-02 (4min), 03-02 (7min), 04-03 (2min), 03-03 (5min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -82,6 +82,10 @@ Recent decisions affecting current work:
 - [03-02]: Null changePct sorted to bottom via custom nullBottomSort function
 - [03-02]: Weight shows N/A on symbol detail page (needs full portfolio context)
 - [03-02]: ROE displayed as percentage (value * 100) since stored as decimal
+- [03-03]: Small slices below 3% allocation merged into "Other" in donut charts
+- [03-03]: Top movers sorted by day change % (changePct) as most actionable daily metric
+- [03-03]: Broker breakdown collapsed by default to reduce visual noise
+- [03-03]: Null sectors/strategies labelled "Unassigned", null platforms labelled "Unknown"
 - [04-01]: formatCurrency defaults to USD (was GBP) since portfolio holds US stocks
 - [04-01]: Roll chain matching uses call_put type + 5-day proximity heuristic
 - [04-01]: Premium chart groups by opened date month (when premium was received/paid)
@@ -114,5 +118,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed 04-03-PLAN.md (options dashboard UI)
+Stopped at: Completed 03-03-PLAN.md (summary cards, allocation charts, top movers, broker breakdown)
 Resume file: None
