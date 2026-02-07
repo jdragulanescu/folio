@@ -15,15 +15,17 @@ import {
   toDisplay,
   type TransactionInput,
 } from "@/lib/calculations"
-import type { TransactionRecord } from "@/lib/types"
+import type { TransactionRecord, OptionRecord } from "@/lib/types"
 
 interface CapitalGainsTableProps {
   transactions: TransactionRecord[]
+  options: OptionRecord[]
   forexRate: number
 }
 
 export function CapitalGainsTable({
   transactions,
+  options,
   forexRate,
 }: CapitalGainsTableProps) {
   const [currency] = useCurrencyPreference()
@@ -59,14 +61,30 @@ export function CapitalGainsTable({
     }))
   }, [transactions])
 
+  const totals = useMemo(() => {
+    return {
+      sellCount: fiscalYears.reduce((sum, fy) => sum + fy.sellCount, 0),
+      totalProceeds: fiscalYears.reduce((sum, fy) => sum + fy.totalProceeds, 0),
+      totalCostBasis: fiscalYears.reduce(
+        (sum, fy) => sum + fy.totalCostBasis,
+        0,
+      ),
+      realisedPnl: fiscalYears.reduce((sum, fy) => sum + fy.realisedPnl, 0),
+    }
+  }, [fiscalYears])
+
+  const totalCommission = useMemo(() => {
+    return options
+      .filter((o) => o.commission != null)
+      .reduce((sum, o) => sum + o.commission!, 0)
+  }, [options])
+
   if (fiscalYears.length === 0) return null
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">
-          Capital Gains by Fiscal Year
-        </CardTitle>
+        <CardTitle className="text-sm font-medium">Capital Gains</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -107,8 +125,37 @@ export function CapitalGainsTable({
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t font-semibold">
+                <td className="pt-2">Total</td>
+                <td className="pt-2 text-right tabular-nums">
+                  {totals.sellCount}
+                </td>
+                <td className="pt-2 text-right tabular-nums">
+                  {fc(totals.totalProceeds)}
+                </td>
+                <td className="pt-2 text-right tabular-nums">
+                  {fc(totals.totalCostBasis)}
+                </td>
+                <td
+                  className={`pt-2 text-right tabular-nums ${pnlClassName(totals.realisedPnl)}`}
+                >
+                  {fc(totals.realisedPnl)}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
+        {totalCommission !== 0 && (
+          <div className="mt-3 flex items-center justify-between border-t pt-3 text-sm">
+            <span className="text-muted-foreground">
+              Total Options Commission
+            </span>
+            <span className="tabular-nums font-medium text-loss">
+              {fc(Math.abs(totalCommission))}
+            </span>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

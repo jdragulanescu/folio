@@ -28,10 +28,13 @@ export default async function PortfolioPage() {
         <EpsYieldChart holdings={data.holdings} />
         <TopMovers holdings={data.holdings} forexRate={data.forexRate} />
         <BrokerBreakdown holdings={data.holdings} options={data.options} forexRate={data.forexRate} />
-        <CapitalGainsTable
-          transactions={data.transactions}
-          forexRate={data.forexRate}
-        />
+        <div className="md:col-span-2">
+          <CapitalGainsTable
+            transactions={data.transactions}
+            options={data.options}
+            forexRate={data.forexRate}
+          />
+        </div>
       </div>
     </div>
   )
