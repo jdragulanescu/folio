@@ -38,11 +38,6 @@ export function TransactionsFilters({
   const [symbolInput, setSymbolInput] = useState(filters.symbol ?? "")
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Sync external filter changes back to local state
-  useEffect(() => {
-    setSymbolInput(filters.symbol ?? "")
-  }, [filters.symbol])
-
   function handleSymbolChange(value: string) {
     setSymbolInput(value)
     if (debounceRef.current) clearTimeout(debounceRef.current)

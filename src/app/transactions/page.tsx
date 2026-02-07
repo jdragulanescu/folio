@@ -1,8 +1,7 @@
-export default function TransactionsPage() {
-  return (
-    <div>
-      <h1 className="text-foreground text-2xl font-bold">Transactions</h1>
-      <p className="text-muted-foreground mt-2">Coming soon.</p>
-    </div>
-  );
+import { getTransactionsPage } from "@/lib/transactions"
+import { TransactionsTable } from "@/components/transactions/transactions-table"
+
+export default async function TransactionsPage() {
+  const initialData = await getTransactionsPage()
+  return <TransactionsTable initialData={initialData} />
 }
