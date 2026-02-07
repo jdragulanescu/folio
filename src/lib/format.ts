@@ -1,17 +1,23 @@
 // ============================================================================
 // Financial Display Formatting Utilities
 // ============================================================================
-// Centralised formatting for currency, percentages, and numbers. Used by both
-// Server and Client Components -- NOT server-only.
+// Centralised formatting for currency, percentages, numbers, and dates.
+// Used by both Server and Client Components -- NOT server-only.
 // ============================================================================
 
+import { format, parseISO, differenceInDays } from "date-fns"
+
 /**
- * Format a number as GBP currency (e.g., "£12,345.67").
+ * Format a number as currency (e.g., "$12,345.67" or "£12,345.67").
+ * Defaults to USD. Uses en-GB locale for consistent thousands separators.
  */
-export function formatCurrency(value: number): string {
+export function formatCurrency(
+  value: number,
+  currency: "USD" | "GBP" = "USD",
+): string {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: "GBP",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value)
@@ -36,16 +42,38 @@ export function formatNumber(value: number, dp: number = 2): string {
 }
 
 /**
- * Format a large number in compact notation (e.g., "£1.2B", "£456M").
+ * Format a large number in compact notation (e.g., "$1.2B", "$456M").
  * Useful for market cap display.
  */
 export function formatCompact(value: number): string {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: "GBP",
+    currency: "USD",
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value)
+}
+
+/**
+ * Format an ISO date string as "dd MMM yyyy" (e.g., "15 Jan 2025").
+ */
+export function formatDate(dateStr: string): string {
+  return format(parseISO(dateStr), "dd MMM yyyy")
+}
+
+/**
+ * Format an ISO date string as "dd/MM/yy" (e.g., "15/01/25").
+ */
+export function formatDateShort(dateStr: string): string {
+  return format(parseISO(dateStr), "dd/MM/yy")
+}
+
+/**
+ * Calculate the number of days until an expiration date.
+ * Positive = days remaining, negative = days past expiry.
+ */
+export function daysToExpiry(expirationDate: string): number {
+  return differenceInDays(parseISO(expirationDate), new Date())
 }
 
 /**
