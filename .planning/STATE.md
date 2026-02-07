@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** One place to see the full portfolio -- stocks and bought options together with live prices -- without manually maintaining a spreadsheet.
-**Current focus:** Phase 3 - Portfolio Overview (ready to plan)
+**Current focus:** Phase 3 - Portfolio Overview (in progress)
 
 ## Current Position
 
-Phase: 2 of 8 complete, ready for Phase 3
-Plan: 3 of 3 in Phase 2 (all complete)
-Status: Phase 2 verified, ready for Phase 3 planning
-Last activity: 2026-02-06 -- Quick task 002: Switch to Tiingo provider abstraction
+Phase: 3 of 8 (Portfolio Overview)
+Plan: 1 of 3 in Phase 3 (complete)
+Status: In progress
+Last activity: 2026-02-07 -- Completed 03-01-PLAN.md (dependencies, data assembly, page shell)
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 35%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4min
-- Total execution time: 0.38 hours
+- Total execution time: 0.43 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [███░░░░░░░] 30%
 |-------|-------|-------|----------|
 | 01 | 3/3 | 15min | 5min |
 | 02 | 3/3 | 9min | 3min |
+| 03 | 1/3 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4min), 01-03 (6min), 02-01 (2min), 02-03 (4min), 02-02 (3min)
+- Last 5 plans: 01-03 (6min), 02-01 (2min), 02-03 (4min), 02-02 (3min), 03-01 (3min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 - [quick-002]: Tiingo midPrice for forex (bid/ask average), computed changesPercentage
 - [quick-002]: Tiingo IEX lacks yearHigh, yearLow, marketCap, pe, eps, avgVolume, priceAvg50, priceAvg200 -- all null
 - [quick-002]: FMP files kept as dormant code (fmp.ts, fmp-types.ts unchanged)
+- [03-01]: getPrimaryPlatform uses net share tally (buys - sells) per platform to determine broker
+- [03-01]: Shares exported with 6 decimal places for fractional share accuracy
+- [03-01]: dayChange computed per-holding then summed; null changePct treated as 0
+- [03-01]: unrealisedPnlPct as (unrealisedPnl / totalCost) * 100 with zero guard
 
 ### Pending Todos
 
@@ -91,6 +96,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-06
-Stopped at: Quick task 002 complete, ready for Phase 3 planning
+Last session: 2026-02-07
+Stopped at: Completed 03-01-PLAN.md (dependencies, data assembly, page shell)
 Resume file: None
