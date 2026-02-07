@@ -10,6 +10,7 @@ import "server-only"
 // layer. All Big.js values are converted to numbers here via toDisplay().
 // ============================================================================
 
+import Big from "big.js"
 import {
   computePortfolio,
   toDisplay,
@@ -24,6 +25,7 @@ import type {
   DepositRecord,
   DividendRecord,
   OptionRecord,
+  SettingRecord,
 } from "./types"
 
 // ---------------------------------------------------------------------------
@@ -70,6 +72,7 @@ export interface PortfolioData {
   dayChange: number
   dayChangePct: number
   cashBalance: number
+  forexRate: number
   options: OptionRecord[]
   transactions: TransactionRecord[]
 }
@@ -77,6 +80,14 @@ export interface PortfolioData {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** US-based brokers whose deposits are already in USD. */
+const US_BROKERS = new Set(["IBKR", "Robinhood"])
+
+/** Returns true if the given platform is a US-based broker. */
+function isUsBroker(platform: string | null): boolean {
+  return platform != null && US_BROKERS.has(platform)
+}
 
 /**
  * Determine the primary platform (broker) for a symbol by tallying shares
@@ -116,14 +127,19 @@ function getPrimaryPlatform(
 
 export async function getPortfolioData(): Promise<PortfolioData> {
   // Step 1: Fetch all needed data in parallel
-  const [symbols, transactions, deposits, options, dividends] =
+  const [symbols, transactions, deposits, options, dividends, settings] =
     await fetchParallel(
       () => getAllRecords<SymbolRecord>("symbols"),
       () => getAllRecords<TransactionRecord>("transactions"),
       () => getAllRecords<DepositRecord>("deposits"),
       () => getAllRecords<OptionRecord>("options"),
       () => getAllRecords<DividendRecord>("dividends"),
+      () => getAllRecords<SettingRecord>("settings"),
     )
+
+  // Extract USD/GBP forex rate from settings (default 0.79 if not found)
+  const usdGbpSetting = settings.find((s) => s.key === "usd_gbp_rate")
+  const usdGbpRate = usdGbpSetting ? Number(usdGbpSetting.value) || 0.79 : 0.79
 
   // Step 2: Build symbol lookup map
   const symbolMap = new Map<string, SymbolRecord>()
@@ -167,7 +183,9 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   const result = computePortfolio(holdingsInput)
 
   // Step 6: Filter to only active holdings (shares > 0) and convert to display
-  const activeHoldings = result.holdings.filter((h) => h.shares.gt(0))
+  const activeHoldings = result.holdings.filter((h) =>
+    h.shares.gte(new Big("0.0001")),
+  )
 
   const displayHoldings: DisplayHolding[] = activeHoldings.map((h) => {
     const symbolRecord = symbolMap.get(h.symbol)!
@@ -285,11 +303,16 @@ export async function getPortfolioData(): Promise<PortfolioData> {
   baseTotals.totalMarketValue += longOptionsCost
   baseTotals.totalCost += longOptionsCost
 
-  // Step 9: Calculate cash balance
+  // Step 9: Calculate cash balance (all values converted to USD)
   let cashBalance = 0
-  // + deposits
+  // + deposits (convert GBP deposits to USD)
   for (const d of deposits) {
-    cashBalance += d.amount
+    if (isUsBroker(d.platform)) {
+      cashBalance += d.amount
+    } else {
+      // GBP deposit: divide by USD/GBP rate to get USD
+      cashBalance += d.amount / usdGbpRate
+    }
   }
   // +/- stock transactions
   for (const tx of transactions) {
@@ -378,10 +401,14 @@ export async function getPortfolioData(): Promise<PortfolioData> {
       ? (dayChange / totalMarketValueWithCash) * 100
       : 0
 
-  // Step 12: Compute total deposited
+  // Step 12: Compute total deposited (converted to USD)
   let totalDeposited = 0
   for (const d of deposits) {
-    totalDeposited += d.amount
+    if (isUsBroker(d.platform)) {
+      totalDeposited += d.amount
+    } else {
+      totalDeposited += d.amount / usdGbpRate
+    }
   }
 
   // Step 13: Compute options premium (premium received from selling × qty × 100)
@@ -405,6 +432,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     dayChange: Number(dayChange.toFixed(2)),
     dayChangePct: Number(dayChangePct.toFixed(2)),
     cashBalance,
+    forexRate: usdGbpRate,
     options,
     transactions,
   }

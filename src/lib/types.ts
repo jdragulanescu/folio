@@ -141,10 +141,6 @@ export interface OptionRecord {
   status: "Open" | "Closed" | "Expired" | "Rolled" | "Assigned"
   close_date: string | null
   close_premium: number | null
-  profit: number | null
-  days_held: number | null
-  return_pct: number | null
-  annualised_return_pct: number | null
   outer_strike: number | null
   commission: number | null
   platform: string | null
