@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { computeLeapsDisplay, type LeapsDisplayRow } from "@/lib/options"
+import { computeLeapsDisplay, type LeapsDisplayRow } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 import { leapsColumns } from "./options-columns"
 

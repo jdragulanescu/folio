@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { daysToExpiry } from "@/lib/format"
-import type { OptionsRow } from "@/lib/options"
+import type { OptionsRow } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 import { allColumns } from "./options-columns"
 

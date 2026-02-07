@@ -1,7 +1,7 @@
 "use client"
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import type { OptionsPageData } from "@/lib/options"
+import type { OptionsPageData } from "@/lib/options-shared"
 import { OptionsStatCards } from "./options-stat-cards"
 import { WheelTable } from "./wheel-table"
 import { LeapsTable } from "./leaps-table"

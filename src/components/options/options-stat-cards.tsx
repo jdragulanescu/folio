@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, pnlClassName } from "@/lib/format"
-import type { OptionsStats } from "@/lib/options"
+import type { OptionsStats } from "@/lib/options-shared"
 
 interface OptionsStatCardsProps {
   stats: OptionsStats

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { daysToExpiry } from "@/lib/format"
-import { buildOptionsRows, type OptionsRow } from "@/lib/options"
+import { buildOptionsRows, type OptionsRow } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 import { wheelColumns } from "./options-columns"
 

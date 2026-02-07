@@ -13,7 +13,7 @@ import {
   daysToExpiry,
   pnlClassName,
 } from "@/lib/format"
-import type { OptionsRow, LeapsDisplayRow } from "@/lib/options"
+import type { OptionsRow, LeapsDisplayRow } from "@/lib/options-shared"
 
 // ---------------------------------------------------------------------------
 // Reusable Sortable Header

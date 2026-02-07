@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { buildPremiumByMonth } from "@/lib/options"
+import { buildPremiumByMonth } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 
 interface PremiumChartProps {

@@ -16,7 +16,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { formatCurrency } from "@/lib/format"
-import type { MonthlyPremium } from "@/lib/options"
+import type { MonthlyPremium } from "@/lib/options-shared"
 
 interface PremiumChartSummaryProps {
   premiumByMonth: MonthlyPremium[]
