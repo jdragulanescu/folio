@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: 4 of 8 complete (Phases 1-4 done), ready for Phase 5
 Plan: 4 of 4 in Phase 4 (all complete, verified 31/31 must-haves)
 Status: Phase 4 verified and complete
-Last activity: 2026-02-07 -- Quick task 003: fix portfolio calcs, currency, tests
+Last activity: 2026-02-07 -- Quick task 004: fix calculations consistency (negative sells, deposits, options P&L)
 
 Progress: [██████░░░░] 54%
 
@@ -99,11 +99,14 @@ Recent decisions affecting current work:
 - [04-03]: All tab uses flat OptionsRow[] without roll chain grouping for unified view
 - [04-04]: buildPremiumByMonth already returns abbreviated month names (not ISO dates) -- use directly
 - [04-04]: Available years always include current year even with no data
-- [quick-003]: US brokers (IBKR, Robinhood) have USD deposits; all others treated as GBP
+- [quick-003]: ~~US brokers (IBKR, Robinhood) have USD deposits; all others treated as GBP~~ (CORRECTED in quick-004: ALL deposits are GBP)
 - [quick-003]: Currency toggle placed above summary cards, persisted in localStorage via useCurrencyPreference
 - [quick-003]: holdings-columns converted from static array to getColumns(currency, forexRate) factory
 - [quick-003]: Capital gains computed via Section 104 pool per-symbol, aggregated by UK fiscal year
 - [quick-003]: forexRate exposed on PortfolioData and passed to all currency-displaying components
+- [quick-004]: ALL deposits are GBP -- removed isUsBroker branching for deposits
+- [quick-004]: Math.abs() on all transaction amounts to handle negative sells from spreadsheet migration
+- [quick-004]: Options P&L uses computeProfit() from options-shared for consistency across pages
 
 ### Pending Todos
 
@@ -122,9 +125,10 @@ Recent decisions affecting current work:
 | 001 | Fix FMP legacy endpoint 403 — migrate to stable API | 2026-02-06 | 4c5fbe3 | [001-fix-fmp-legacy-endpoint-403-migrate-to-s](./quick/001-fix-fmp-legacy-endpoint-403-migrate-to-s/) |
 | 002 | Switch to Tiingo provider abstraction | 2026-02-06 | 9f388b2 | [002-switch-to-tiingo-provider-abstraction](./quick/002-switch-to-tiingo-provider-abstraction/) |
 | 003 | Fix portfolio calcs, currency selector, tests | 2026-02-07 | a4a0a05 | [003-fix-portfolio-calcs-currency-tests](./quick/003-fix-portfolio-calcs-currency-tests/) |
+| 004 | Fix calculations consistency (negative sells, deposits, options P&L) | 2026-02-07 | 7c8c9c2 | [004-fix-calculations-consistency](./quick/004-fix-calculations-consistency/) |
 
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed quick task 003 (fix portfolio calcs, currency selector, tests)
+Stopped at: Completed quick task 004 (fix calculations consistency)
 Resume file: None
