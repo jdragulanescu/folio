@@ -31,6 +31,7 @@ export type TableName =
   | "monthly_snapshots"
   | "price_history"
   | "settings"
+  | "fundamentals_history"
 
 // ---------------------------------------------------------------------------
 // NocoDB Pagination Types
@@ -126,7 +127,7 @@ export interface OptionRecord {
   Id: number
   ticker: string
   opened: string
-  strategy_type: "Wheel" | "LEAPS" | "Spread"
+  strategy_type: "Wheel" | "LEAPS" | "Spread" | "Collar" | "VPCS" | "BET"
   call_put: "Call" | "Put"
   buy_sell: "Buy" | "Sell"
   expiration: string
@@ -144,7 +145,29 @@ export interface OptionRecord {
   days_held: number | null
   return_pct: number | null
   annualised_return_pct: number | null
+  outer_strike: number | null
+  commission: number | null
+  platform: string | null
   notes: string | null
+  CreatedAt?: string
+  UpdatedAt?: string
+}
+
+/** Fundamentals history table -- daily fundamental snapshots per symbol */
+export interface FundamentalsHistoryRecord {
+  Id: number
+  symbol: string
+  date: string
+  eps: number | null
+  pe: number | null
+  beta: number | null
+  dividend_yield: number | null
+  market_cap: number | null
+  sector: string | null
+  forward_pe: number | null
+  peg_ratio: number | null
+  roe: number | null
+  roa: number | null
   CreatedAt?: string
   UpdatedAt?: string
 }

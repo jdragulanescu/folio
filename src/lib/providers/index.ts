@@ -14,4 +14,10 @@ import type { PriceProvider } from "./types"
 
 export const provider: PriceProvider = new TiingoProvider()
 
-export type { ForexRate, PriceProvider, StockQuote } from "./types"
+export type {
+  ForexRate,
+  PriceProvider,
+  StockQuote,
+  FundamentalsData,
+  FundamentalsProvider,
+} from "./types"

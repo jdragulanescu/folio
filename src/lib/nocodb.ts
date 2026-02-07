@@ -30,6 +30,7 @@ const TABLE_IDS: Record<TableName, string> = {
   monthly_snapshots: process.env.NOCODB_TABLE_SNAPSHOTS!,
   price_history: process.env.NOCODB_TABLE_PRICE_HISTORY!,
   settings: process.env.NOCODB_TABLE_SETTINGS!,
+  fundamentals_history: process.env.NOCODB_TABLE_FUNDAMENTALS_HISTORY ?? "",
 }
 
 // ---------------------------------------------------------------------------

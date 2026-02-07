@@ -48,3 +48,28 @@ export interface PriceProvider {
   fetchBatchQuotes(symbols: string[]): Promise<StockQuote[]>
   fetchForexRate(pair?: string): Promise<ForexRate>
 }
+
+// ---------------------------------------------------------------------------
+// Fundamentals Data
+// ---------------------------------------------------------------------------
+
+/** Provider-agnostic fundamentals snapshot consumed by sync. */
+export interface FundamentalsData {
+  symbol: string
+  eps: number | null
+  pe: number | null
+  beta: number | null
+  dividendYield: number | null
+  marketCap: number | null
+  sector: string | null
+  forwardPe: number | null
+  pegRatio: number | null
+  roe: number | null
+  roa: number | null
+}
+
+/** Interface for fundamentals data providers. */
+export interface FundamentalsProvider {
+  name: string
+  fetchFundamentals(symbol: string): Promise<FundamentalsData>
+}

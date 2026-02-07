@@ -10,8 +10,13 @@ import {
   updateRecords,
 } from "./nocodb"
 import { provider } from "./providers"
-import type { StockQuote } from "./providers"
-import type { PriceHistoryRecord, SettingRecord, SymbolRecord } from "./types"
+import type { StockQuote, FundamentalsData } from "./providers"
+import type {
+  FundamentalsHistoryRecord,
+  PriceHistoryRecord,
+  SettingRecord,
+  SymbolRecord,
+} from "./types"
 
 // ============================================================================
 // Sync Orchestration
@@ -254,4 +259,133 @@ export async function* runSync(): AsyncGenerator<SyncProgress> {
 
   log.info({ updated, failed, timestamp }, "sync complete")
   yield { type: "complete", timestamp, updated, failed }
+}
+
+// ---------------------------------------------------------------------------
+// Fundamentals Sync
+// ---------------------------------------------------------------------------
+
+/** Delay between individual symbol fetches to respect rate limits. */
+const FUNDAMENTALS_DELAY_MS = 1100
+
+/**
+ * Sync fundamentals for portfolio symbols using the provided provider.
+ *
+ * For each symbol:
+ * 1. Checks if we already have today's fundamentals history row (skip if cached)
+ * 2. Fetches fundamentals from the provider
+ * 3. Updates the symbols table with current fundamentals
+ * 4. Inserts a history row for today
+ *
+ * Rate-limited with a delay between each symbol fetch.
+ */
+export async function* syncFundamentals(
+  fundamentalsProvider: import("./providers/types").FundamentalsProvider,
+  portfolioSymbols?: string[],
+): AsyncGenerator<SyncProgress> {
+  const tableId = process.env.NOCODB_TABLE_FUNDAMENTALS_HISTORY
+  if (!tableId) {
+    log.warn("NOCODB_TABLE_FUNDAMENTALS_HISTORY not set, skipping fundamentals sync")
+    yield { type: "complete", timestamp: new Date().toISOString(), updated: 0, failed: 0 }
+    return
+  }
+
+  const symbols = await getAllRecords<SymbolRecord>("symbols")
+
+  // Filter to only portfolio symbols if provided
+  const targetSymbols = portfolioSymbols
+    ? symbols.filter((s) => portfolioSymbols.includes(s.symbol))
+    : symbols
+
+  const total = targetSymbols.length
+  log.info({ total, provider: fundamentalsProvider.name }, "starting fundamentals sync")
+  yield { type: "start", total }
+
+  if (total === 0) {
+    yield { type: "complete", timestamp: new Date().toISOString(), updated: 0, failed: 0 }
+    return
+  }
+
+  const today = new Date().toISOString().split("T")[0]
+
+  // Check which symbols already have today's fundamentals
+  const existingHistory = await getAllRecords<FundamentalsHistoryRecord>(
+    "fundamentals_history",
+    {
+      where: `(date,eq,exactDate,${today})`,
+      fields: ["symbol"],
+    },
+  )
+  const alreadySynced = new Set(existingHistory.map((r) => r.symbol))
+
+  let updated = 0
+  let failed = 0
+
+  for (let i = 0; i < targetSymbols.length; i++) {
+    const sym = targetSymbols[i]
+
+    if (alreadySynced.has(sym.symbol)) {
+      log.debug({ symbol: sym.symbol }, "fundamentals already cached for today, skipping")
+      yield { type: "progress", completed: i + 1, total, batch: 0 }
+      continue
+    }
+
+    try {
+      const data: FundamentalsData = await fundamentalsProvider.fetchFundamentals(sym.symbol)
+
+      // Update symbols table
+      await updateRecord<SymbolRecord>("symbols", sym.Id, {
+        eps: data.eps,
+        pe_ratio: data.pe,
+        beta: data.beta,
+        dividend_yield: data.dividendYield,
+        market_cap: data.marketCap,
+        sector: data.sector ?? sym.sector,
+        forward_pe: data.forwardPe,
+        peg_ratio: data.pegRatio,
+        roe: data.roe,
+        roa: data.roa,
+        last_fundamentals_update: new Date().toISOString(),
+      })
+
+      // Insert fundamentals history row
+      await createRecord<FundamentalsHistoryRecord>("fundamentals_history", {
+        symbol: sym.symbol,
+        date: today,
+        eps: data.eps,
+        pe: data.pe,
+        beta: data.beta,
+        dividend_yield: data.dividendYield,
+        market_cap: data.marketCap,
+        sector: data.sector,
+        forward_pe: data.forwardPe,
+        peg_ratio: data.pegRatio,
+        roe: data.roe,
+        roa: data.roa,
+      })
+
+      updated++
+      log.debug({ symbol: sym.symbol }, "fundamentals updated")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error"
+      log.error({ symbol: sym.symbol, err: message }, "fundamentals fetch failed")
+      failed++
+    }
+
+    yield { type: "progress", completed: i + 1, total, batch: 0 }
+
+    // Rate-limit delay between requests
+    if (i < targetSymbols.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, FUNDAMENTALS_DELAY_MS))
+    }
+  }
+
+  await upsertSetting(
+    "last_fundamentals_sync",
+    new Date().toISOString(),
+    "Last successful fundamentals sync",
+  )
+
+  log.info({ updated, failed }, "fundamentals sync complete")
+  yield { type: "complete", timestamp: new Date().toISOString(), updated, failed }
 }
