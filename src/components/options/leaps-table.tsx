@@ -27,14 +27,10 @@ import { leapsColumns } from "./options-columns"
 // ---------------------------------------------------------------------------
 
 function getRowClassName(row: LeapsDisplayRow): string {
-  const isOpen = row.status === "Open"
-
-  if (isOpen) {
+  if (row.status === "Open") {
     const dte = row.daysToExpiry
     if (dte < 0) return "bg-destructive/10"
     if (dte <= 7) return "bg-amber-500/10"
-  } else {
-    return "opacity-60"
   }
 
   return ""

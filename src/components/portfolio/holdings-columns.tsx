@@ -198,4 +198,121 @@ export const columns: ColumnDef<DisplayHolding>[] = [
     header: (ctx) => <SortableHeader {...ctx} label="Broker" />,
     cell: ({ getValue }) => getValue<string | null>() ?? "",
   },
+  {
+    accessorKey: "eps",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="EPS" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "totalEarnings",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Total Earnings" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "peRatio",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="P/E" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatNumber(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "earningsYield",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Earn. Yield" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatPercent(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "annualDividend",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Ann. Dividend" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "dividendYield",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Div. Yield" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatPercent(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "yieldOnCost",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Yield on Cost" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatPercent(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "annualIncome",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Ann. Income" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "beta",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Beta" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums">
+          {value != null ? formatNumber(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
 ]

@@ -28,15 +28,10 @@ import { allColumns } from "./options-columns"
 // ---------------------------------------------------------------------------
 
 function getRowClassName(row: OptionsRow): string {
-  const opt = row.option
-  const isOpen = opt.status === "Open"
-
-  if (isOpen) {
-    const dte = daysToExpiry(opt.expiration)
+  if (row.option.status === "Open") {
+    const dte = daysToExpiry(row.option.expiration)
     if (dte < 0) return "bg-destructive/10"
     if (dte <= 7) return "bg-amber-500/10"
-  } else {
-    return "opacity-60"
   }
 
   return ""

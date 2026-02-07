@@ -45,6 +45,15 @@ export interface DisplayHolding {
   unrealisedPnlPct: number
   realisedPnl: number
   weight: number
+  eps: number | null
+  peRatio: number | null
+  totalEarnings: number | null
+  earningsYield: number | null
+  annualDividend: number | null
+  dividendYield: number | null
+  yieldOnCost: number | null
+  annualIncome: number | null
+  beta: number | null
 }
 
 export interface PortfolioData {
@@ -163,23 +172,53 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     const unrealisedPnlPct =
       totalCost !== 0 ? (unrealisedPnl / totalCost) * 100 : 0
 
+    const currentPrice = toDisplay(h.currentPrice)
+    const shares = toDisplay(h.shares, 6)
+    const avgCost = toDisplay(h.avgCost)
+    const eps = symbolRecord.eps
+    const dividendYield = symbolRecord.dividend_yield_ttm ?? symbolRecord.dividend_yield
+
+    // Derived: annual dividend per share from yield
+    const annualDivPerShare =
+      dividendYield != null && currentPrice > 0
+        ? (dividendYield / 100) * currentPrice
+        : null
+
     return {
       symbol: h.symbol,
       name: h.name,
       sector: h.sector,
       strategy: h.strategy,
       platform: getPrimaryPlatform(symbolTxs),
-      currentPrice: toDisplay(h.currentPrice),
+      currentPrice,
       previousClose: symbolRecord.previous_close,
       changePct: symbolRecord.change_pct,
-      shares: toDisplay(h.shares, 6),
-      avgCost: toDisplay(h.avgCost),
+      shares,
+      avgCost,
       totalCost,
       marketValue: toDisplay(h.marketValue),
       unrealisedPnl,
       unrealisedPnlPct: Number(unrealisedPnlPct.toFixed(2)),
       realisedPnl: toDisplay(h.realisedPnl),
       weight: toDisplay(h.weight),
+      eps,
+      peRatio: symbolRecord.pe_ratio,
+      totalEarnings: eps != null ? Number((eps * shares).toFixed(2)) : null,
+      earningsYield:
+        eps != null && currentPrice > 0
+          ? Number(((eps / currentPrice) * 100).toFixed(2))
+          : null,
+      annualDividend: annualDivPerShare != null ? Number(annualDivPerShare.toFixed(4)) : null,
+      dividendYield: dividendYield != null ? Number(dividendYield.toFixed(2)) : null,
+      yieldOnCost:
+        annualDivPerShare != null && avgCost > 0
+          ? Number(((annualDivPerShare / avgCost) * 100).toFixed(2))
+          : null,
+      annualIncome:
+        annualDivPerShare != null
+          ? Number((annualDivPerShare * shares).toFixed(2))
+          : null,
+      beta: symbolRecord.beta,
     }
   })
 

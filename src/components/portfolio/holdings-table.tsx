@@ -55,6 +55,15 @@ const COLUMN_LABELS: Record<string, string> = {
   sector: "Sector",
   strategy: "Strategy",
   platform: "Broker",
+  eps: "EPS",
+  totalEarnings: "Total Earnings",
+  peRatio: "P/E",
+  earningsYield: "Earnings Yield",
+  annualDividend: "Ann. Dividend",
+  dividendYield: "Div. Yield",
+  yieldOnCost: "Yield on Cost",
+  annualIncome: "Ann. Income",
+  beta: "Beta",
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +98,7 @@ export function HoldingsTable({ holdings }: { holdings: DisplayHolding[] }) {
   const totalCount = holdings.length
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       {/* Toolbar */}
       <div className="flex items-center gap-2">
         <Input
@@ -129,7 +138,7 @@ export function HoldingsTable({ holdings }: { holdings: DisplayHolding[] }) {
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

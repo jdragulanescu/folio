@@ -37,8 +37,6 @@ function getRowClassName(row: OptionsRow, depth: number): string {
     const dte = daysToExpiry(opt.expiration)
     if (dte < 0) return "bg-destructive/10"
     if (dte <= 7) return "bg-amber-500/10"
-  } else {
-    return "opacity-60"
   }
 
   if (depth > 0) {

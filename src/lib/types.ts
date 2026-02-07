@@ -97,6 +97,7 @@ export interface SymbolRecord {
   free_cash_flow_per_share: number | null
   book_value_per_share: number | null
   current_ratio: number | null
+  beta: number | null
   price_avg_50: number | null
   price_avg_200: number | null
   last_fundamentals_update: string | null

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useCallback, useSyncExternalStore } from "react"
 import type { VisibilityState } from "@tanstack/react-table"
 
 const STORAGE_KEY = "folio-holdings-columns"
@@ -22,6 +22,50 @@ const DEFAULT_VISIBILITY: VisibilityState = {
   sector: false,
   strategy: false,
   platform: false,
+  eps: false,
+  totalEarnings: false,
+  peRatio: false,
+  earningsYield: false,
+  annualDividend: false,
+  dividendYield: false,
+  yieldOnCost: false,
+  annualIncome: false,
+  beta: false,
+}
+
+// Module-level cache to avoid parsing JSON on every getSnapshot call.
+// useSyncExternalStore requires referential stability when data hasn't changed.
+let cached: VisibilityState = DEFAULT_VISIBILITY
+let cachedRaw: string | null = null
+
+function getSnapshot(): VisibilityState {
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (raw === cachedRaw) return cached
+
+  cachedRaw = raw
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as unknown
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        cached = parsed as VisibilityState
+        return cached
+      }
+    } catch {
+      // Invalid JSON -- fall through to defaults
+    }
+  }
+  cached = DEFAULT_VISIBILITY
+  return cached
+}
+
+function getServerSnapshot(): VisibilityState {
+  return DEFAULT_VISIBILITY
+}
+
+function subscribe(callback: () => void) {
+  // Listen for cross-tab storage changes
+  window.addEventListener("storage", callback)
+  return () => window.removeEventListener("storage", callback)
 }
 
 export function useColumnVisibility(): [
@@ -30,41 +74,30 @@ export function useColumnVisibility(): [
     updater: VisibilityState | ((prev: VisibilityState) => VisibilityState),
   ) => void,
 ] {
-  const [visibility, setVisibilityState] = useState<VisibilityState>(() => {
-    if (typeof window === "undefined") return DEFAULT_VISIBILITY
-
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored) as unknown
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-          return parsed as VisibilityState
-        }
-      }
-    } catch {
-      // Invalid JSON or storage error -- fall through to defaults
-    }
-
-    return DEFAULT_VISIBILITY
-  })
-
-  // Persist to localStorage whenever visibility changes
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(visibility))
-    } catch {
-      // Storage full or unavailable -- silently ignore
-    }
-  }, [visibility])
+  const visibility = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  )
 
   const setVisibility = useCallback(
     (
       updater: VisibilityState | ((prev: VisibilityState) => VisibilityState),
     ) => {
-      setVisibilityState((prev) => {
-        const next = typeof updater === "function" ? updater(prev) : updater
-        return next
-      })
+      const current = getSnapshot()
+      const next = typeof updater === "function" ? updater(current) : updater
+
+      // Update cache + localStorage, then notify subscribers
+      cached = next
+      cachedRaw = JSON.stringify(next)
+      try {
+        localStorage.setItem(STORAGE_KEY, cachedRaw)
+      } catch {
+        // Storage full or unavailable
+      }
+
+      // Dispatch a storage event so useSyncExternalStore re-reads
+      window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY }))
     },
     [],
   )
