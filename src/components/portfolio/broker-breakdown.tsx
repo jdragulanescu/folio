@@ -1,11 +1,10 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Label, Pie, PieChart } from "recharts"
 import type { DisplayHolding } from "@/lib/portfolio"
 import type { OptionRecord } from "@/lib/types"
 import { formatCurrency, formatPercent, pnlClassName } from "@/lib/format"
-import { Button } from "@/components/ui/button"
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,7 +16,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardAction,
 } from "@/components/ui/card"
 
 const CHART_COLORS = [
@@ -47,8 +45,6 @@ interface BrokerData {
 }
 
 export function BrokerBreakdown({ holdings, options = [] }: BrokerBreakdownProps) {
-  const [expanded, setExpanded] = useState(false)
-
   const { brokers, chartData, chartConfig } = useMemo(() => {
     const groups = new Map<
       string,
@@ -125,20 +121,9 @@ export function BrokerBreakdown({ holdings, options = [] }: BrokerBreakdownProps
     <Card>
       <CardHeader>
         <CardTitle className="text-sm font-medium">Broker Breakdown</CardTitle>
-        <CardAction>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => setExpanded((prev) => !prev)}
-            className="text-xs"
-          >
-            {expanded ? "Hide" : "View"}
-          </Button>
-        </CardAction>
       </CardHeader>
 
-      {expanded && (
-        <CardContent className="space-y-6">
+      <CardContent className="space-y-6">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -233,7 +218,6 @@ export function BrokerBreakdown({ holdings, options = [] }: BrokerBreakdownProps
             </div>
           )}
         </CardContent>
-      )}
     </Card>
   )
 }
