@@ -61,13 +61,32 @@ export function formatShares(value: number): string {
  * Format a large number in compact notation (e.g., "$1.2B", "$456M").
  * Useful for market cap display.
  */
-export function formatCompact(value: number): string {
+export function formatCompact(
+  value: number,
+  currency: "USD" | "GBP" = "USD",
+): string {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: "USD",
+    currency,
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value)
+}
+
+/**
+ * Convert a value between USD and GBP using the given USD/GBP rate.
+ * The rate represents how many GBP per 1 USD (e.g., 0.79).
+ */
+export function convertCurrency(
+  value: number,
+  fromCurrency: "USD" | "GBP",
+  toCurrency: "USD" | "GBP",
+  usdGbpRate: number,
+): number {
+  if (fromCurrency === toCurrency) return value
+  if (fromCurrency === "USD" && toCurrency === "GBP") return value * usdGbpRate
+  // GBP to USD
+  return value / usdGbpRate
 }
 
 /**
@@ -87,8 +106,10 @@ export function formatDateShort(dateStr: string): string {
 /**
  * Calculate the number of days until an expiration date.
  * Positive = days remaining, negative = days past expiry.
+ * Returns 0 for closed options (status !== "Open").
  */
-export function daysToExpiry(expirationDate: string): number {
+export function daysToExpiry(expirationDate: string, status?: string): number {
+  if (status && status !== "Open") return 0
   return differenceInDays(parseISO(expirationDate), new Date())
 }
 

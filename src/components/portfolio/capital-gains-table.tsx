@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, pnlClassName } from "@/lib/format"
+import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import {
   computeRealisedGainsByFiscalYear,
   toDisplay,
@@ -23,8 +24,14 @@ interface CapitalGainsTableProps {
 
 export function CapitalGainsTable({
   transactions,
-  forexRate: _forexRate,
+  forexRate,
 }: CapitalGainsTableProps) {
+  const [currency] = useCurrencyPreference()
+
+  const fc = (value: number) => {
+    const converted = currency === "GBP" ? value * forexRate : value
+    return formatCurrency(converted, currency)
+  }
   const fiscalYears = useMemo(() => {
     // Group transactions by symbol
     const txBySymbol = new Map<string, TransactionInput[]>()
@@ -87,15 +94,15 @@ export function CapitalGainsTable({
                     {fy.sellCount}
                   </td>
                   <td className="py-2 text-right tabular-nums">
-                    {formatCurrency(fy.totalProceeds)}
+                    {fc(fy.totalProceeds)}
                   </td>
                   <td className="py-2 text-right tabular-nums">
-                    {formatCurrency(fy.totalCostBasis)}
+                    {fc(fy.totalCostBasis)}
                   </td>
                   <td
                     className={`py-2 text-right tabular-nums ${pnlClassName(fy.realisedPnl)}`}
                   >
-                    {formatCurrency(fy.realisedPnl)}
+                    {fc(fy.realisedPnl)}
                   </td>
                 </tr>
               ))}

@@ -5,6 +5,7 @@ import { Label, Pie, PieChart } from "recharts"
 import type { DisplayHolding } from "@/lib/portfolio"
 import type { OptionRecord } from "@/lib/types"
 import { formatCurrency, formatPercent, pnlClassName } from "@/lib/format"
+import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import {
   ChartContainer,
   ChartTooltip,
@@ -32,6 +33,7 @@ const CHART_COLORS = [
 interface BrokerBreakdownProps {
   holdings: DisplayHolding[]
   options?: OptionRecord[]
+  forexRate: number
 }
 
 interface BrokerData {
@@ -44,7 +46,14 @@ interface BrokerData {
   weightPct: number
 }
 
-export function BrokerBreakdown({ holdings, options = [] }: BrokerBreakdownProps) {
+export function BrokerBreakdown({ holdings, options = [], forexRate }: BrokerBreakdownProps) {
+  const [currency] = useCurrencyPreference()
+
+  const fc = (value: number) => {
+    const converted = currency === "GBP" ? value * forexRate : value
+    return formatCurrency(converted, currency)
+  }
+
   const { brokers, chartData, chartConfig } = useMemo(() => {
     const groups = new Map<
       string,
@@ -147,12 +156,12 @@ export function BrokerBreakdown({ holdings, options = [] }: BrokerBreakdownProps
                       {b.optionsCount}
                     </td>
                     <td className="py-2 text-right tabular-nums text-sm">
-                      {formatCurrency(b.marketValue)}
+                      {fc(b.marketValue)}
                     </td>
                     <td
                       className={`py-2 text-right tabular-nums text-sm ${pnlClassName(b.unrealisedPnl)}`}
                     >
-                      {formatCurrency(b.unrealisedPnl)}
+                      {fc(b.unrealisedPnl)}
                     </td>
                     <td className="py-2 text-right tabular-nums text-sm">
                       {formatPercent(b.weightPct).replace("+", "")}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   flexRender,
@@ -32,7 +32,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useColumnVisibility } from "@/hooks/use-column-visibility"
-import { columns } from "./holdings-columns"
+import { useCurrencyPreference } from "@/hooks/use-currency-preference"
+import { getColumns } from "./holdings-columns"
 import type { DisplayHolding } from "@/lib/portfolio"
 
 // ---------------------------------------------------------------------------
@@ -69,13 +70,24 @@ const COLUMN_LABELS: Record<string, string> = {
 // HoldingsTable Component
 // ---------------------------------------------------------------------------
 
-export function HoldingsTable({ holdings }: { holdings: DisplayHolding[] }) {
+interface HoldingsTableProps {
+  holdings: DisplayHolding[]
+  forexRate: number
+}
+
+export function HoldingsTable({ holdings, forexRate }: HoldingsTableProps) {
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([
     { id: "weight", desc: true },
   ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useColumnVisibility()
+  const [currency] = useCurrencyPreference()
+
+  const columns = useMemo(
+    () => getColumns(currency, forexRate),
+    [currency, forexRate],
+  )
 
   const table = useReactTable({
     data: holdings,

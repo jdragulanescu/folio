@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import Link from "next/link"
 import type { DisplayHolding } from "@/lib/portfolio"
 import { formatPercent, formatCurrency, pnlClassName } from "@/lib/format"
+import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 import {
   Card,
   CardContent,
@@ -14,9 +15,16 @@ import { TrendingUp, TrendingDown } from "lucide-react"
 
 interface TopMoversProps {
   holdings: DisplayHolding[]
+  forexRate: number
 }
 
-export function TopMovers({ holdings }: TopMoversProps) {
+export function TopMovers({ holdings, forexRate }: TopMoversProps) {
+  const [currency] = useCurrencyPreference()
+
+  const fc = (value: number) => {
+    const converted = currency === "GBP" ? value * forexRate : value
+    return formatCurrency(converted, currency)
+  }
   const { gainers, losers } = useMemo(() => {
     const withChange = holdings.filter((h) => h.changePct != null)
 
@@ -62,7 +70,7 @@ export function TopMovers({ holdings }: TopMoversProps) {
           ) : (
             <div className="space-y-2.5">
               {gainers.map((h) => (
-                <MoverRow key={h.symbol} holding={h} />
+                <MoverRow key={h.symbol} holding={h} fc={fc} />
               ))}
             </div>
           )}
@@ -81,7 +89,7 @@ export function TopMovers({ holdings }: TopMoversProps) {
           ) : (
             <div className="space-y-2.5">
               {losers.map((h) => (
-                <MoverRow key={h.symbol} holding={h} />
+                <MoverRow key={h.symbol} holding={h} fc={fc} />
               ))}
             </div>
           )}
@@ -91,7 +99,13 @@ export function TopMovers({ holdings }: TopMoversProps) {
   )
 }
 
-function MoverRow({ holding }: { holding: DisplayHolding }) {
+function MoverRow({
+  holding,
+  fc,
+}: {
+  holding: DisplayHolding
+  fc: (value: number) => string
+}) {
   const changePct = holding.changePct ?? 0
 
   return (
@@ -104,7 +118,7 @@ function MoverRow({ holding }: { holding: DisplayHolding }) {
           {holding.symbol}
         </Link>
         <p className="text-xs text-muted-foreground">
-          {formatCurrency(holding.marketValue)}
+          {fc(holding.marketValue)}
         </p>
       </div>
       <span className={`font-mono text-sm tabular-nums ${pnlClassName(changePct)}`}>
