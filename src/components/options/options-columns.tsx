@@ -45,7 +45,7 @@ function SortableHeader<T>({
 }
 
 // ---------------------------------------------------------------------------
-// Null-safe sorting function
+// Null-safe sorting functions
 // ---------------------------------------------------------------------------
 
 const nullBottomSort: SortingFn<OptionsRow> = (rowA, rowB, columnId) => {
@@ -119,10 +119,10 @@ function DteCellValue({ dte }: { dte: number }) {
 }
 
 // ---------------------------------------------------------------------------
-// Wheel Columns
+// Short Options Columns (formerly Wheel)
 // ---------------------------------------------------------------------------
 
-export const wheelColumns: ColumnDef<OptionsRow>[] = [
+export const shortColumns: ColumnDef<OptionsRow>[] = [
   {
     id: "expand",
     header: () => null,
@@ -177,6 +177,14 @@ export const wheelColumns: ColumnDef<OptionsRow>[] = [
     ),
   },
   {
+    accessorFn: (row) => row.option.qty,
+    id: "qty",
+    header: (ctx) => <SortableHeader {...ctx} label="Qty" />,
+    cell: ({ row }) => (
+      <span className="tabular-nums text-right">{row.original.option.qty}</span>
+    ),
+  },
+  {
     accessorFn: (row) => row.option.strike,
     id: "strike",
     header: (ctx) => <SortableHeader {...ctx} label="Strike" />,
@@ -185,6 +193,20 @@ export const wheelColumns: ColumnDef<OptionsRow>[] = [
         {formatCurrency(row.original.option.strike)}
       </span>
     ),
+  },
+  {
+    accessorFn: (row) => row.option.outer_strike,
+    id: "outer_strike",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Outer Strike" />,
+    cell: ({ row }) => {
+      const value = row.original.option.outer_strike
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
   },
   {
     accessorFn: (row) => row.option.expiration,
@@ -216,19 +238,51 @@ export const wheelColumns: ColumnDef<OptionsRow>[] = [
     ),
   },
   {
-    accessorFn: (row) =>
-      row.isChainHead ? row.cumulativePremium : row.option.premium,
-    id: "premium",
-    header: (ctx) => <SortableHeader {...ctx} label="Premium" />,
+    accessorFn: (row) => row.option.moneyness,
+    id: "moneyness",
+    header: (ctx) => <SortableHeader {...ctx} label="Moneyness" />,
     cell: ({ row }) => {
+      const value = row.original.option.moneyness
+      return value ? <Badge variant="secondary">{value}</Badge> : "\u2014"
+    },
+  },
+  {
+    accessorFn: (row) => {
+      const opt = row.option
+      return row.isChainHead
+        ? (row.cumulativePremium ?? 0) * opt.qty * 100
+        : opt.premium * opt.qty * 100
+    },
+    id: "credit",
+    header: (ctx) => <SortableHeader {...ctx} label="Credit" />,
+    cell: ({ row }) => {
+      const opt = row.original.option
       const value = row.original.isChainHead
-        ? row.original.cumulativePremium
-        : row.original.option.premium
+        ? (row.original.cumulativePremium ?? 0) * opt.qty * 100
+        : opt.premium * opt.qty * 100
       return (
         <span
           className="tabular-nums text-right"
-          title={row.original.isChainHead ? "Cumulative chain premium" : undefined}
+          title={row.original.isChainHead ? "Cumulative chain credit" : undefined}
         >
+          {formatCurrency(value)}
+        </span>
+      )
+    },
+  },
+  {
+    accessorFn: (row) => {
+      const opt = row.option
+      return opt.close_premium != null ? opt.close_premium * opt.qty * 100 : null
+    },
+    id: "debit",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Debit" />,
+    cell: ({ row }) => {
+      const opt = row.original.option
+      const value = opt.close_premium != null ? opt.close_premium * opt.qty * 100 : null
+      return (
+        <span className="tabular-nums text-right">
           {value != null ? formatCurrency(value) : "\u2014"}
         </span>
       )
@@ -248,14 +302,37 @@ export const wheelColumns: ColumnDef<OptionsRow>[] = [
     ),
   },
   {
-    accessorFn: (row) =>
-      row.isChainHead ? row.cumulativeProfit : row.option.profit,
+    accessorFn: (row) => row.option.commission,
+    id: "commission",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Commission" />,
+    cell: ({ row }) => {
+      const value = row.original.option.commission
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? formatCurrency(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorFn: (row) => {
+      const opt = row.option
+      return row.isChainHead
+        ? (row.cumulativeProfit ?? 0) * opt.qty * 100
+        : opt.profit != null
+          ? opt.profit * opt.qty * 100
+          : null
+    },
     id: "profit",
     header: (ctx) => <SortableHeader {...ctx} label="Profit" />,
     cell: ({ row }) => {
+      const opt = row.original.option
       const value = row.original.isChainHead
-        ? row.original.cumulativeProfit
-        : row.original.option.profit
+        ? (row.original.cumulativeProfit ?? 0) * opt.qty * 100
+        : opt.profit != null
+          ? opt.profit * opt.qty * 100
+          : null
       if (value == null) {
         return <span className="text-muted-foreground tabular-nums text-right">{"\u2014"}</span>
       }
@@ -301,6 +378,33 @@ export const wheelColumns: ColumnDef<OptionsRow>[] = [
     },
   },
   {
+    accessorFn: (row) => row.option.days_held,
+    id: "days_held",
+    sortingFn: nullBottomSort,
+    header: (ctx) => <SortableHeader {...ctx} label="Days Held" />,
+    cell: ({ row }) => {
+      const value = row.original.option.days_held
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? value : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    accessorFn: (row) => row.option.close_date,
+    id: "close_date",
+    header: (ctx) => <SortableHeader {...ctx} label="Closed" />,
+    cell: ({ row }) => {
+      const value = row.original.option.close_date
+      return (
+        <span className="tabular-nums">
+          {value ? formatDate(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
     accessorFn: (row) => row.option.status,
     id: "status",
     header: (ctx) => <SortableHeader {...ctx} label="Status" />,
@@ -309,10 +413,10 @@ export const wheelColumns: ColumnDef<OptionsRow>[] = [
 ]
 
 // ---------------------------------------------------------------------------
-// LEAPS Columns
+// Long Options Columns (formerly LEAPS)
 // ---------------------------------------------------------------------------
 
-export const leapsColumns: ColumnDef<LeapsDisplayRow>[] = [
+export const longColumns: ColumnDef<LeapsDisplayRow>[] = [
   {
     accessorKey: "ticker",
     header: (ctx) => <SortableHeader {...ctx} label="Ticker" />,
@@ -332,6 +436,13 @@ export const leapsColumns: ColumnDef<LeapsDisplayRow>[] = [
     header: (ctx) => <SortableHeader {...ctx} label="C/P" />,
     cell: ({ getValue }) => (
       <Badge variant="secondary">{getValue<string>()}</Badge>
+    ),
+  },
+  {
+    accessorKey: "qty",
+    header: (ctx) => <SortableHeader {...ctx} label="Qty" />,
+    cell: ({ getValue }) => (
+      <span className="tabular-nums text-right">{getValue<number>()}</span>
     ),
   },
   {
@@ -369,20 +480,30 @@ export const leapsColumns: ColumnDef<LeapsDisplayRow>[] = [
     cell: ({ getValue }) => <DteCellValue dte={getValue<number>()} />,
   },
   {
-    accessorKey: "premium",
-    header: (ctx) => <SortableHeader {...ctx} label="Premium Paid" />,
-    cell: ({ getValue }) => (
-      <span className="tabular-nums text-right">
-        {formatCurrency(getValue<number>())}
-      </span>
-    ),
+    id: "costBasis",
+    accessorFn: (row) =>
+      row.costBasis != null ? row.premium * row.qty * 100 : null,
+    sortingFn: nullBottomSortLeaps,
+    header: (ctx) => <SortableHeader {...ctx} label="Cost Basis" />,
+    cell: ({ row }) => {
+      const value = row.original.premium * row.original.qty * 100
+      return (
+        <span className="tabular-nums text-right">
+          {formatCurrency(value)}
+        </span>
+      )
+    },
   },
   {
     accessorKey: "currentPnl",
     sortingFn: nullBottomSortLeaps,
     header: (ctx) => <SortableHeader {...ctx} label="Current P&L" />,
-    cell: ({ getValue }) => {
-      const value = getValue<number | null>()
+    cell: ({ row }) => {
+      // Open long options: P&L = 0 (no free options pricing)
+      if (row.original.status === "Open") {
+        return <span className="tabular-nums text-right text-muted-foreground">$0.00</span>
+      }
+      const value = row.original.currentPnl
       if (value == null) {
         return <span className="tabular-nums text-right text-muted-foreground">N/A</span>
       }
@@ -446,6 +567,51 @@ export const leapsColumns: ColumnDef<LeapsDisplayRow>[] = [
     },
   },
   {
+    id: "valueLostPerMonth",
+    accessorFn: (row) => row.valueLostPerMonth,
+    sortingFn: nullBottomSortLeaps,
+    header: (ctx) => <SortableHeader {...ctx} label="$/Month Lost" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? formatCurrency(value) : "N/A"}
+        </span>
+      )
+    },
+  },
+  {
+    id: "premiumFeePct",
+    accessorFn: (row) => row.premiumFeePct,
+    sortingFn: nullBottomSortLeaps,
+    header: (ctx) => <SortableHeader {...ctx} label="Premium Fee%" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? formatPercent(value) : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
+    id: "leverage",
+    accessorFn: (row) => {
+      const costBasis = row.premium * row.qty * 100
+      return costBasis > 0 ? (row.strike * row.qty * 100) / costBasis : null
+    },
+    sortingFn: nullBottomSortLeaps,
+    header: (ctx) => <SortableHeader {...ctx} label="Leverage" />,
+    cell: ({ getValue }) => {
+      const value = getValue<number | null>()
+      return (
+        <span className="tabular-nums text-right">
+          {value != null ? `${formatNumber(value, 1)}x` : "\u2014"}
+        </span>
+      )
+    },
+  },
+  {
     accessorKey: "status",
     header: (ctx) => <SortableHeader {...ctx} label="Status" />,
     cell: ({ getValue }) => <StatusBadge status={getValue<string>()} />,
@@ -490,6 +656,14 @@ export const allColumns: ColumnDef<OptionsRow>[] = [
     ),
   },
   {
+    accessorFn: (row) => row.option.qty,
+    id: "qty",
+    header: (ctx) => <SortableHeader {...ctx} label="Qty" />,
+    cell: ({ row }) => (
+      <span className="tabular-nums text-right">{row.original.option.qty}</span>
+    ),
+  },
+  {
     accessorFn: (row) => row.option.strike,
     id: "strike",
     header: (ctx) => <SortableHeader {...ctx} label="Strike" />,
@@ -516,22 +690,27 @@ export const allColumns: ColumnDef<OptionsRow>[] = [
     cell: ({ row }) => <DteCell expirationDate={row.original.option.expiration} />,
   },
   {
-    accessorFn: (row) => row.option.premium,
+    accessorFn: (row) => row.option.premium * row.option.qty * 100,
     id: "premium",
     header: (ctx) => <SortableHeader {...ctx} label="Premium" />,
-    cell: ({ row }) => (
-      <span className="tabular-nums text-right">
-        {formatCurrency(row.original.option.premium)}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const value = row.original.option.premium * row.original.option.qty * 100
+      return (
+        <span className="tabular-nums text-right">
+          {formatCurrency(value)}
+        </span>
+      )
+    },
   },
   {
-    accessorFn: (row) => row.option.profit,
+    accessorFn: (row) =>
+      row.option.profit != null ? row.option.profit * row.option.qty * 100 : null,
     id: "profit",
     sortingFn: nullBottomSort,
     header: (ctx) => <SortableHeader {...ctx} label="Profit" />,
     cell: ({ row }) => {
-      const value = row.original.option.profit
+      const opt = row.original.option
+      const value = opt.profit != null ? opt.profit * opt.qty * 100 : null
       if (value == null) {
         return <span className="text-muted-foreground tabular-nums text-right">{"\u2014"}</span>
       }
@@ -566,3 +745,6 @@ export const allColumns: ColumnDef<OptionsRow>[] = [
     cell: ({ row }) => <StatusBadge status={row.original.option.status} />,
   },
 ]
+
+// Backwards-compatible aliases
+export { shortColumns as wheelColumns, longColumns as leapsColumns }

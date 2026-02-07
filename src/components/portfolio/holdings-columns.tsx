@@ -10,6 +10,7 @@ import {
   formatCurrency,
   formatPercent,
   formatNumber,
+  formatShares,
   pnlClassName,
 } from "@/lib/format"
 import type { DisplayHolding } from "@/lib/portfolio"
@@ -87,7 +88,7 @@ export const columns: ColumnDef<DisplayHolding>[] = [
     accessorKey: "shares",
     header: (ctx) => <SortableHeader {...ctx} label="Shares" />,
     cell: ({ getValue }) => (
-      <span className="tabular-nums">{formatNumber(getValue<number>(), 4)}</span>
+      <span className="tabular-nums">{formatShares(getValue<number>())}</span>
     ),
   },
   {
@@ -138,18 +139,6 @@ export const columns: ColumnDef<DisplayHolding>[] = [
       return (
         <span className={`tabular-nums ${pnlClassName(value)}`}>
           {formatPercent(value)}
-        </span>
-      )
-    },
-  },
-  {
-    accessorKey: "realisedPnl",
-    header: (ctx) => <SortableHeader {...ctx} label="Realised" />,
-    cell: ({ getValue }) => {
-      const value = getValue<number>()
-      return (
-        <span className={`tabular-nums ${pnlClassName(value)}`}>
-          {formatCurrency(value)}
         </span>
       )
     },

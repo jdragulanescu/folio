@@ -17,7 +17,6 @@ const DEFAULT_VISIBILITY: VisibilityState = {
   shares: false,
   avgCost: false,
   totalCost: false,
-  realisedPnl: false,
   unrealisedPnlPct: false,
   sector: false,
   strategy: false,

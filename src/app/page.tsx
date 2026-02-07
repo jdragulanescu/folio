@@ -7,6 +7,7 @@ import { BrokerBreakdown } from "@/components/portfolio/broker-breakdown"
 import { WeightBarChart } from "@/components/portfolio/weight-bar-chart"
 import { CostWeightChart } from "@/components/portfolio/cost-weight-chart"
 import { EpsYieldChart } from "@/components/portfolio/eps-yield-chart"
+import { CapitalGainsTable } from "@/components/portfolio/capital-gains-table"
 
 export default async function PortfolioPage() {
   const data = await getPortfolioData()
@@ -26,7 +27,11 @@ export default async function PortfolioPage() {
         <CostWeightChart holdings={data.holdings} />
         <EpsYieldChart holdings={data.holdings} />
         <TopMovers holdings={data.holdings} />
-        <BrokerBreakdown holdings={data.holdings} />
+        <BrokerBreakdown holdings={data.holdings} options={data.options} />
+        <CapitalGainsTable
+          holdings={data.holdings}
+          transactions={data.transactions}
+        />
       </div>
     </div>
   )

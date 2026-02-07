@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { buildPremiumByMonth } from "@/lib/options-shared"
+import { isShortStrategy } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 
 interface PremiumChartProps {
@@ -32,45 +32,63 @@ interface PremiumChartProps {
   initialYear?: number
 }
 
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
+
 const chartConfig = {
-  wheel: { label: "Wheel", color: "var(--chart-1)" },
-  leaps: { label: "LEAPS", color: "var(--chart-2)" },
+  premium: { label: "Premium", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
 export function PremiumChart({ allOptions, initialYear }: PremiumChartProps) {
+  const shortOptions = useMemo(
+    () => allOptions.filter((o) => isShortStrategy(o.strategy_type)),
+    [allOptions],
+  )
+
   const availableYears = useMemo(() => {
     const years = new Set<number>()
-    for (const opt of allOptions) {
+    for (const opt of shortOptions) {
       years.add(new Date(opt.opened).getFullYear())
     }
-    // Always include current year even if no data
     years.add(new Date().getFullYear())
     return Array.from(years).sort((a, b) => b - a)
-  }, [allOptions])
+  }, [shortOptions])
 
   const [selectedYear, setSelectedYear] = useState(
     initialYear ?? availableYears[0] ?? new Date().getFullYear(),
   )
 
-  const premiumByMonth = useMemo(
-    () => buildPremiumByMonth(allOptions, selectedYear),
-    [allOptions, selectedYear],
-  )
+  const chartData = useMemo(() => {
+    // Initialize all 12 months
+    const months = MONTH_NAMES.map((name) => ({
+      month: name,
+      premium: 0,
+      collateral: 0,
+    }))
 
-  const chartData = useMemo(
-    () =>
-      premiumByMonth.map((pm) => ({
-        month: pm.month,
-        wheel: pm.wheel,
-        leaps: pm.leaps,
-      })),
-    [premiumByMonth],
-  )
+    for (const opt of shortOptions) {
+      const opened = new Date(opt.opened)
+      if (opened.getFullYear() !== selectedYear) continue
+
+      const monthIdx = opened.getMonth()
+      months[monthIdx].premium += opt.premium * opt.qty * 100
+      if (opt.collateral != null) {
+        months[monthIdx].collateral += opt.collateral
+      }
+    }
+
+    return months.map((m) => ({
+      month: m.month,
+      premium: Math.round(m.premium * 100) / 100,
+    }))
+  }, [shortOptions, selectedYear])
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Monthly Premium</CardTitle>
+        <CardTitle>Monthly Short Premium</CardTitle>
         <Select
           value={String(selectedYear)}
           onValueChange={(v) => setSelectedYear(Number(v))}
@@ -96,15 +114,8 @@ export function PremiumChart({ allOptions, initialYear }: PremiumChartProps) {
             <ChartTooltip content={<ChartTooltipContent />} />
             <ChartLegend content={<ChartLegendContent />} />
             <Bar
-              dataKey="wheel"
-              stackId="premium"
-              fill="var(--color-wheel)"
-              radius={[0, 0, 0, 0]}
-            />
-            <Bar
-              dataKey="leaps"
-              stackId="premium"
-              fill="var(--color-leaps)"
+              dataKey="premium"
+              fill="var(--color-premium)"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

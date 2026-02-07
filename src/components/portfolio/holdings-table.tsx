@@ -49,7 +49,6 @@ const COLUMN_LABELS: Record<string, string> = {
   marketValue: "Market Value",
   unrealisedPnl: "P&L",
   unrealisedPnlPct: "P&L %",
-  realisedPnl: "Realised",
   changePct: "Day %",
   weight: "Weight",
   sector: "Sector",

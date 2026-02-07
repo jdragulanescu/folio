@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { daysToExpiry } from "@/lib/format"
-import { buildOptionsRows, type OptionsRow } from "@/lib/options-shared"
+import { buildOptionsRows, isShortStrategy, type OptionsRow } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
-import { wheelColumns } from "./options-columns"
+import { shortColumns } from "./options-columns"
 
 // ---------------------------------------------------------------------------
 // Row Styling
@@ -47,20 +47,20 @@ function getRowClassName(row: OptionsRow, depth: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// WheelTable Component
+// ShortOptionsTable Component (formerly WheelTable)
 // ---------------------------------------------------------------------------
 
-interface WheelTableProps {
+interface ShortOptionsTableProps {
   options: OptionRecord[]
   symbolPrices: Record<string, number>
 }
 
-export function WheelTable({ options }: WheelTableProps) {
+export function ShortOptionsTable({ options }: ShortOptionsTableProps) {
   const rows = useMemo(() => {
-    const wheelOptions = options.filter(
-      (opt) => opt.strategy_type === "Wheel",
+    const shortOptions = options.filter(
+      (opt) => isShortStrategy(opt.strategy_type),
     )
-    return buildOptionsRows(wheelOptions)
+    return buildOptionsRows(shortOptions)
   }, [options])
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -68,7 +68,7 @@ export function WheelTable({ options }: WheelTableProps) {
 
   const table = useReactTable({
     data: rows,
-    columns: wheelColumns,
+    columns: shortColumns,
     state: { sorting, expanded },
     onSortingChange: setSorting,
     onExpandedChange: setExpanded,
@@ -80,7 +80,7 @@ export function WheelTable({ options }: WheelTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -121,10 +121,10 @@ export function WheelTable({ options }: WheelTableProps) {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={wheelColumns.length}
+                  colSpan={shortColumns.length}
                   className="h-24 text-center"
                 >
-                  No wheel positions found.
+                  No short option positions found.
                 </TableCell>
               </TableRow>
             )}
@@ -138,3 +138,6 @@ export function WheelTable({ options }: WheelTableProps) {
     </div>
   )
 }
+
+// Backwards-compatible alias
+export { ShortOptionsTable as WheelTable }

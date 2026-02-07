@@ -18,9 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { computeLeapsDisplay, type LeapsDisplayRow } from "@/lib/options-shared"
+import { computeLeapsDisplay, isLongStrategy, type LeapsDisplayRow } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
-import { leapsColumns } from "./options-columns"
+import { longColumns } from "./options-columns"
 
 // ---------------------------------------------------------------------------
 // Row Styling
@@ -37,20 +37,20 @@ function getRowClassName(row: LeapsDisplayRow): string {
 }
 
 // ---------------------------------------------------------------------------
-// LeapsTable Component
+// LongOptionsTable Component (formerly LeapsTable)
 // ---------------------------------------------------------------------------
 
-interface LeapsTableProps {
+interface LongOptionsTableProps {
   options: OptionRecord[]
   symbolPrices: Record<string, number>
 }
 
-export function LeapsTable({ options, symbolPrices }: LeapsTableProps) {
-  const leapsRows = useMemo(() => {
-    const leapsOptions = options.filter(
-      (opt) => opt.strategy_type === "LEAPS",
+export function LongOptionsTable({ options, symbolPrices }: LongOptionsTableProps) {
+  const longRows = useMemo(() => {
+    const longOptions = options.filter(
+      (opt) => isLongStrategy(opt.strategy_type),
     )
-    return leapsOptions.map((opt) =>
+    return longOptions.map((opt) =>
       computeLeapsDisplay(opt, symbolPrices[opt.ticker] ?? null),
     )
   }, [options, symbolPrices])
@@ -58,8 +58,8 @@ export function LeapsTable({ options, symbolPrices }: LeapsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
 
   const table = useReactTable({
-    data: leapsRows,
-    columns: leapsColumns,
+    data: longRows,
+    columns: longColumns,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -68,7 +68,7 @@ export function LeapsTable({ options, symbolPrices }: LeapsTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -106,10 +106,10 @@ export function LeapsTable({ options, symbolPrices }: LeapsTableProps) {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={leapsColumns.length}
+                  colSpan={longColumns.length}
                   className="h-24 text-center"
                 >
-                  No LEAPS positions found.
+                  No long option positions found.
                 </TableCell>
               </TableRow>
             )}
@@ -118,8 +118,11 @@ export function LeapsTable({ options, symbolPrices }: LeapsTableProps) {
       </div>
 
       <p className="text-muted-foreground text-sm">
-        {leapsRows.length} position{leapsRows.length !== 1 ? "s" : ""}
+        {longRows.length} position{longRows.length !== 1 ? "s" : ""}
       </p>
     </div>
   )
 }
+
+// Backwards-compatible alias
+export { LongOptionsTable as LeapsTable }

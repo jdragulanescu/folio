@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Label, Pie, PieChart } from "recharts"
 import type { DisplayHolding } from "@/lib/portfolio"
+import type { OptionRecord } from "@/lib/types"
 import { formatCurrency, formatPercent, pnlClassName } from "@/lib/format"
 import { Button } from "@/components/ui/button"
 import {
@@ -32,39 +33,57 @@ const CHART_COLORS = [
 
 interface BrokerBreakdownProps {
   holdings: DisplayHolding[]
+  options?: OptionRecord[]
 }
 
 interface BrokerData {
   name: string
   key: string
   holdingsCount: number
+  optionsCount: number
   marketValue: number
   unrealisedPnl: number
   weightPct: number
 }
 
-export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
+export function BrokerBreakdown({ holdings, options = [] }: BrokerBreakdownProps) {
   const [expanded, setExpanded] = useState(false)
 
   const { brokers, chartData, chartConfig } = useMemo(() => {
     const groups = new Map<
       string,
-      { marketValue: number; unrealisedPnl: number; count: number }
+      { marketValue: number; unrealisedPnl: number; count: number; optionsCount: number }
     >()
     let total = 0
 
     for (const h of holdings) {
+      if (h.symbol === "CASH") continue
       const platform = h.platform ?? "Unknown"
       const existing = groups.get(platform) ?? {
         marketValue: 0,
         unrealisedPnl: 0,
         count: 0,
+        optionsCount: 0,
       }
       existing.marketValue += h.marketValue
       existing.unrealisedPnl += h.unrealisedPnl
       existing.count += 1
       groups.set(platform, existing)
       total += h.marketValue
+    }
+
+    // Add options to broker aggregation
+    for (const o of options) {
+      const platform = o.platform ?? "IBKR"
+      const existing = groups.get(platform) ?? {
+        marketValue: 0,
+        unrealisedPnl: 0,
+        count: 0,
+        optionsCount: 0,
+      }
+      existing.optionsCount += 1
+      // Don't add to marketValue again (open long options already in holdings)
+      groups.set(platform, existing)
     }
 
     const sorted = [...groups.entries()].sort(
@@ -75,6 +94,7 @@ export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
       name,
       key: name.toLowerCase().replace(/[^a-z0-9]/g, "_"),
       holdingsCount: data.count,
+      optionsCount: data.optionsCount,
       marketValue: data.marketValue,
       unrealisedPnl: data.unrealisedPnl,
       weightPct: total !== 0 ? (data.marketValue / total) * 100 : 0,
@@ -95,7 +115,7 @@ export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
       chartData: chart,
       chartConfig: config,
     }
-  }, [holdings])
+  }, [holdings, options])
 
   if (brokers.length === 0) {
     return null
@@ -125,6 +145,7 @@ export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
                 <tr className="border-b text-left text-muted-foreground">
                   <th className="pb-2 text-xs font-medium">Broker</th>
                   <th className="pb-2 text-right text-xs font-medium">Holdings</th>
+                  <th className="pb-2 text-right text-xs font-medium">Options</th>
                   <th className="pb-2 text-right text-xs font-medium">Value</th>
                   <th className="pb-2 text-right text-xs font-medium">P&L</th>
                   <th className="pb-2 text-right text-xs font-medium">Weight</th>
@@ -136,6 +157,9 @@ export function BrokerBreakdown({ holdings }: BrokerBreakdownProps) {
                     <td className="py-2 text-sm font-medium">{b.name}</td>
                     <td className="py-2 text-right tabular-nums text-sm">
                       {b.holdingsCount}
+                    </td>
+                    <td className="py-2 text-right tabular-nums text-sm">
+                      {b.optionsCount}
                     </td>
                     <td className="py-2 text-right tabular-nums text-sm">
                       {formatCurrency(b.marketValue)}
