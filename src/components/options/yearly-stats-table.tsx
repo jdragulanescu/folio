@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/format"
-import { isShortStrategy } from "@/lib/options-shared"
+import { isShortStrategy, computeProfit, computeDaysHeld, computeReturnPct } from "@/lib/options-shared"
 import type { OptionRecord } from "@/lib/types"
 
 interface YearlyStatsTableProps {
@@ -49,18 +49,18 @@ export function YearlyStatsTable({ options }: YearlyStatsTableProps) {
       const count = opts.length
 
       const profitYields = opts
-        .filter((o) => o.collateral != null && o.collateral > 0 && o.profit != null)
-        .map((o) => (o.profit! / o.collateral!) * 100)
+        .filter((o) => o.collateral != null && o.collateral > 0 && computeProfit(o) != null)
+        .map((o) => (computeProfit(o)! / o.collateral!) * 100)
       const avgProfitYield =
         profitYields.length > 0
           ? profitYields.reduce((a, b) => a + b, 0) / profitYields.length
           : 0
 
-      const daysArr = opts.filter((o) => o.days_held != null).map((o) => o.days_held!)
+      const daysArr = opts.filter((o) => o.close_date != null).map((o) => computeDaysHeld(o))
       const avgDaysHeld =
         daysArr.length > 0 ? daysArr.reduce((a, b) => a + b, 0) / daysArr.length : 0
 
-      const returns = opts.filter((o) => o.annualised_return_pct != null).map((o) => o.annualised_return_pct!)
+      const returns = opts.map((o) => computeReturnPct(o)).filter((v): v is number => v != null)
       const avgReturn =
         returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0
 
@@ -75,7 +75,7 @@ export function YearlyStatsTable({ options }: YearlyStatsTableProps) {
       const avgDelta =
         deltas.length > 0 ? deltas.reduce((a, b) => a + b, 0) / deltas.length : 0
 
-      const totalProfit = opts.reduce((sum, o) => sum + (o.profit ?? 0) * o.qty * 100, 0)
+      const totalProfit = opts.reduce((sum, o) => sum + (computeProfit(o) ?? 0), 0)
 
       stats.push({
         year,
@@ -123,7 +123,7 @@ export function YearlyStatsTable({ options }: YearlyStatsTableProps) {
                   <td className="py-2 text-right tabular-nums">{Math.round(s.avgDaysHeld)}</td>
                   <td className="py-2 text-right tabular-nums">{formatPercent(s.avgReturn)}</td>
                   <td className="py-2 text-right tabular-nums">{formatCurrency(s.avgCollateral)}</td>
-                  <td className="py-2 text-right tabular-nums">{formatPercent(s.avgIv)}</td>
+                  <td className="py-2 text-right tabular-nums">{formatPercent(s.avgIv * 100)}</td>
                   <td className="py-2 text-right tabular-nums">{formatNumber(s.avgDelta, 3)}</td>
                   <td className="py-2 text-right tabular-nums">{formatCurrency(s.totalProfit)}</td>
                 </tr>

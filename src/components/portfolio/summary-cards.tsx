@@ -15,6 +15,7 @@ import {
   TrendingDown,
   Wallet,
   CircleDollarSign,
+  Banknote,
 } from "lucide-react"
 import { useCurrencyPreference } from "@/hooks/use-currency-preference"
 
@@ -58,7 +59,7 @@ export function SummaryCards({ data }: SummaryCardsProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {/* Card 1: Total Portfolio Value (hero) */}
         <Card className="col-span-2 sm:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
@@ -139,7 +140,7 @@ export function SummaryCards({ data }: SummaryCardsProps) {
           </CardContent>
         </Card>
 
-        {/* Card 5: Options Premium Collected */}
+        {/* Card 5: Options P&L */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
@@ -152,6 +153,47 @@ export function SummaryCards({ data }: SummaryCardsProps) {
               className={`text-xl font-bold tabular-nums ${pnlClassName(optionsPremium)}`}
             >
               {fc(optionsPremium)}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 6: Cash Balance with breakdown */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+            <CardTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              Cash Balance
+            </CardTitle>
+            <Banknote className="text-muted-foreground size-4" />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-xl font-bold tabular-nums ${pnlClassName(data.cashBalance)}`}
+            >
+              {fc(data.cashBalance)}
+            </div>
+            <div className="text-muted-foreground mt-2 space-y-0.5 text-[10px] tabular-nums">
+              <div className="flex justify-between">
+                <span>Deposits</span>
+                <span className="text-foreground">+{fc(data.cashBreakdown.depositsUsd)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Buys</span>
+                <span className="text-loss">-{fc(data.cashBreakdown.stockBuys)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Sells</span>
+                <span className="text-gain">+{fc(data.cashBreakdown.stockSells)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Dividends</span>
+                <span className="text-foreground">+{fc(data.cashBreakdown.dividends)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Options</span>
+                <span className={pnlClassName(data.cashBreakdown.optionsNet)}>
+                  {data.cashBreakdown.optionsNet >= 0 ? "+" : ""}{fc(data.cashBreakdown.optionsNet)}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>

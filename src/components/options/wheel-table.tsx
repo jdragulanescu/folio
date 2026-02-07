@@ -34,7 +34,7 @@ function getRowClassName(row: OptionsRow, depth: number): string {
   const isOpen = opt.status === "Open"
 
   if (isOpen) {
-    const dte = daysToExpiry(opt.expiration)
+    const dte = daysToExpiry(opt.expiration, opt.status)
     if (dte < 0) return "bg-destructive/10"
     if (dte <= 7) return "bg-amber-500/10"
   }
@@ -63,8 +63,10 @@ export function ShortOptionsTable({ options }: ShortOptionsTableProps) {
     return buildOptionsRows(shortOptions)
   }, [options])
 
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [expanded, setExpanded] = useState<ExpandedState>({})
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "opened", desc: true },
+  ])
+  const [expanded, setExpanded] = useState<ExpandedState>(true)
 
   const table = useReactTable({
     data: rows,
@@ -105,7 +107,7 @@ export function ShortOptionsTable({ options }: ShortOptionsTableProps) {
                   key={row.id}
                   className={cn(
                     getRowClassName(row.original, row.depth),
-                    row.depth > 0 && "border-l-2 border-muted",
+                    row.depth > 0 && "border-l-2 border-muted opacity-75",
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (

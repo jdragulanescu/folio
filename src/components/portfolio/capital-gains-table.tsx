@@ -76,7 +76,7 @@ export function CapitalGainsTable({
   const totalCommission = useMemo(() => {
     return options
       .filter((o) => o.commission != null)
-      .reduce((sum, o) => sum + o.commission!, 0)
+      .reduce((sum, o) => sum + o.commission! * o.qty, 0)
   }, [options])
 
   if (fiscalYears.length === 0) return null

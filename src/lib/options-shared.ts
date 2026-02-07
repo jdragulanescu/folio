@@ -29,12 +29,85 @@ export function isLongStrategy(type: string): type is LongStrategy {
 }
 
 // ---------------------------------------------------------------------------
+// Derived Field Calculations
+// ---------------------------------------------------------------------------
+// These replace the pre-calculated DB fields (profit, days_held, return_pct,
+// annualised_return_pct). Premium and close_premium are per-share; collateral
+// is already total.
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculate profit from raw option fields.
+ * Sell: credit received minus debit paid = (premium - close_premium) × qty × 100
+ * Buy:  proceeds minus cost = (close_premium - premium) × qty × 100
+ */
+export function computeProfit(opt: OptionRecord): number | null {
+  // Expired/Assigned: treat null close_premium as 0 (expired worthless / exercised)
+  const closePremium =
+    opt.close_premium ??
+    (opt.status === "Expired" || opt.status === "Assigned" ? 0 : null)
+  if (closePremium == null) return null
+  if (opt.buy_sell === "Sell") {
+    return (opt.premium - closePremium) * opt.qty * 100
+  }
+  return (closePremium - opt.premium) * opt.qty * 100
+}
+
+/**
+ * Calculate current P&L for an open bought option using intrinsic value.
+ * Call: (max(0, currentPrice - strike) - premium) × qty × 100
+ * Put:  (max(0, strike - currentPrice) - premium) × qty × 100
+ */
+export function computeOpenLongPnl(
+  opt: OptionRecord,
+  currentPrice: number,
+): number {
+  const intrinsic =
+    opt.call_put === "Call"
+      ? Math.max(0, currentPrice - opt.strike)
+      : Math.max(0, opt.strike - currentPrice)
+  return (intrinsic - opt.premium) * opt.qty * 100
+}
+
+/**
+ * Calculate days held.
+ * Closed positions: difference between close_date and opened.
+ * Open positions: difference between today and opened.
+ */
+export function computeDaysHeld(opt: OptionRecord): number {
+  const endDate = opt.close_date ? new Date(opt.close_date) : new Date()
+  return differenceInDays(endDate, new Date(opt.opened))
+}
+
+/**
+ * Calculate return percentage.
+ * Short options: annualised return on collateral = (profit / collateral) × (365 / daysHeld)
+ * Long options: profit yield = profit / cost basis
+ */
+export function computeReturnPct(opt: OptionRecord): number | null {
+  const profit = computeProfit(opt)
+  const daysHeld = computeDaysHeld(opt)
+  if (profit == null || daysHeld <= 0) return null
+
+  if (isShortStrategy(opt.strategy_type)) {
+    if (opt.collateral == null || opt.collateral <= 0) return null
+    return (profit / opt.collateral) * (365 / daysHeld) * 100
+  }
+  // Long options: profit yield as percentage
+  const costBasis = opt.premium * opt.qty * 100
+  if (costBasis <= 0) return null
+  return (profit / costBasis) * 100
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface OptionsStats {
-  totalPremiumCollected: number
-  capitalGainsPnl: number
+  totalPnl: number
+  shortPnl: number
+  longPnl: number
+  totalCommission: number
   winRate: number
   avgDaysHeld: number
 }
@@ -86,16 +159,37 @@ export interface OptionsPageData {
 // Roll Chain Inference
 // ---------------------------------------------------------------------------
 
-/** Maximum days between a rolled close_date and the next opened date */
-const ROLL_PROXIMITY_DAYS = 5
+/**
+ * Maximum days after a rolled close_date to look for the next leg.
+ * Generous window — closest match wins, so false positives are unlikely.
+ */
+const ROLL_MAX_DAYS_AFTER = 30
+
+/** Allow the next leg to have opened up to 14 days before the close (early replacement) */
+const ROLL_MAX_DAYS_BEFORE = 14
+
+/**
+ * Candidate priority for next-leg selection.
+ * Close-date matches are more reliable than opened-date matches.
+ * Rolled options must belong to a chain, so they get priority within each tier.
+ *
+ *   0 = Rolled + close match   (best)
+ *   1 = Non-Rolled + close match
+ *   2 = Rolled + opened match
+ *   3 = Non-Rolled + opened match  (worst)
+ */
+function candidatePriority(isCloseMatch: boolean, isRolled: boolean): number {
+  if (isCloseMatch) return isRolled ? 0 : 1
+  return isRolled ? 2 : 3
+}
 
 /**
  * Infer roll chains from options data.
  *
- * Groups options by ticker, then for each "Rolled" option finds the next
- * option opened within ROLL_PROXIMITY_DAYS of the rolled option's close_date,
- * matching on the same call_put type. Chains are built forward: the last
- * element is the head (current position).
+ * Groups options by ticker, then for each "Rolled" option finds the best
+ * next option opened near the rolled option's close_date (or opened date as
+ * fallback), matching on the same call_put type. Chains are built forward:
+ * the last element is the head (current position).
  */
 export function inferRollChains(options: OptionRecord[]): {
   chains: RollChain[]
@@ -113,11 +207,20 @@ export function inferRollChains(options: OptionRecord[]): {
   const inChain = new Set<number>()
 
   for (const [, tickerOptions] of byTicker) {
-    // Sort by opened date ascending
-    const sorted = [...tickerOptions].sort(
-      (a, b) =>
-        new Date(a.opened).getTime() - new Date(b.opened).getTime(),
-    )
+    // Sort by opened date ascending; tiebreaker: earlier close first so the
+    // option that needs to chain through the other gets processed first.
+    const sorted = [...tickerOptions].sort((a, b) => {
+      const diff =
+        new Date(a.opened).getTime() - new Date(b.opened).getTime()
+      if (diff !== 0) return diff
+      const aClose = a.close_date
+        ? new Date(a.close_date).getTime()
+        : Infinity
+      const bClose = b.close_date
+        ? new Date(b.close_date).getTime()
+        : Infinity
+      return aClose - bClose
+    })
 
     // Find rolled options and build chains forward
     for (const opt of sorted) {
@@ -128,22 +231,55 @@ export function inferRollChains(options: OptionRecord[]): {
 
       while (current.status === "Rolled" && current.close_date) {
         const closeTime = new Date(current.close_date).getTime()
-        const proximityMs = ROLL_PROXIMITY_DAYS * 86_400_000
+        const openedTime = new Date(current.opened).getTime()
+        const beforeMs = ROLL_MAX_DAYS_BEFORE * 86_400_000
+        const afterMs = ROLL_MAX_DAYS_AFTER * 86_400_000
 
-        // Find next option for same ticker + call_put opened within proximity
-        const next = sorted.find(
-          (o) =>
-            !inChain.has(o.Id) &&
-            o.Id !== current.Id &&
-            !chain.includes(o) &&
-            o.call_put === current.call_put &&
-            Math.abs(new Date(o.opened).getTime() - closeTime) <=
-              proximityMs,
-        )
+        // Find the best next leg using a 4-tier priority system:
+        //   close-date matches > opened-date matches
+        //   Rolled candidates > terminal statuses (within same tier)
+        let best: OptionRecord | undefined
+        let bestPriority = 4
+        let bestGap = Infinity
 
-        if (!next) break
-        chain.push(next)
-        current = next
+        for (const o of sorted) {
+          if (inChain.has(o.Id) || o.Id === current.Id || chain.includes(o))
+            continue
+          if (o.call_put !== current.call_put) continue
+
+          const candidateTime = new Date(o.opened).getTime()
+          const gapFromClose = candidateTime - closeTime
+          const gapFromOpened = candidateTime - openedTime
+
+          const validFromClose =
+            gapFromClose >= -beforeMs && gapFromClose <= afterMs
+          const validFromOpened =
+            gapFromOpened >= 0 && gapFromOpened <= afterMs
+
+          if (!validFromClose && !validFromOpened) continue
+
+          const isCloseMatch = validFromClose
+          const gap = isCloseMatch
+            ? Math.abs(gapFromClose)
+            : gapFromOpened
+          const priority = candidatePriority(
+            isCloseMatch,
+            o.status === "Rolled",
+          )
+
+          if (
+            priority < bestPriority ||
+            (priority === bestPriority && gap < bestGap)
+          ) {
+            best = o
+            bestPriority = priority
+            bestGap = gap
+          }
+        }
+
+        if (!best) break
+        chain.push(best)
+        current = best
       }
 
       if (chain.length > 1) {
@@ -152,10 +288,13 @@ export function inferRollChains(options: OptionRecord[]): {
           head: chain[chain.length - 1],
           legs: chain.slice(0, -1),
           totalProfit: chain.reduce(
-            (sum, c) => sum + (c.profit ?? 0),
+            (sum, c) => sum + (computeProfit(c) ?? 0),
             0,
           ),
-          totalPremium: chain.reduce((sum, c) => sum + c.premium, 0),
+          totalPremium: chain.reduce(
+            (sum, c) => sum + c.premium * c.qty * 100,
+            0,
+          ),
         })
       }
     }
@@ -180,36 +319,44 @@ export function computeLeapsDisplay(
   opt: OptionRecord,
   currentPrice: number | null,
 ): LeapsDisplayRow {
-  const dte = differenceInDays(
+  const dte =
+    opt.status === "Open"
+      ? differenceInDays(new Date(opt.expiration), new Date())
+      : 0
+  const initialDte = differenceInDays(
     new Date(opt.expiration),
-    new Date(),
+    new Date(opt.opened),
   )
-  const daysOpen = differenceInDays(new Date(), new Date(opt.opened))
 
   let intrinsicValue: number | null = null
   let extrinsicValue: number | null = null
   let costBasis: number | null = null
-  let currentPnl: number | null = null
   let valueLostPerMonth: number | null = null
 
   if (currentPrice != null) {
     if (opt.call_put === "Call") {
-      intrinsicValue = Math.max(0, currentPrice - opt.strike)
+      intrinsicValue = currentPrice - opt.strike
       costBasis = opt.strike + opt.premium
     } else {
-      intrinsicValue = Math.max(0, opt.strike - currentPrice)
+      intrinsicValue = opt.strike - currentPrice
       costBasis = opt.strike - opt.premium
     }
     extrinsicValue = opt.premium - intrinsicValue
 
-    // Time decay: value lost per month based on days open
-    if (daysOpen > 0) {
-      valueLostPerMonth = (extrinsicValue / daysOpen) * 30 * 100
+    // Time decay: extrinsic spread over the option's total lifespan
+    if (initialDte > 0) {
+      valueLostPerMonth = (extrinsicValue / initialDte) * 30 * 100
     }
-
-    // Current P&L based on intrinsic value vs cost basis
-    currentPnl = (currentPrice - costBasis) * opt.qty * 100
   }
+
+  // P&L: use close_premium for closed options, intrinsic value for open
+  const closedPnl = computeProfit(opt)
+  const currentPnl =
+    closedPnl != null
+      ? closedPnl
+      : currentPrice != null && opt.buy_sell === "Buy"
+        ? computeOpenLongPnl(opt, currentPrice)
+        : null
 
   return {
     ...opt,
@@ -219,7 +366,9 @@ export function computeLeapsDisplay(
     valueLostPerMonth,
     costBasis,
     premiumFeePct:
-      opt.strike > 0 ? (opt.premium / opt.strike) * 100 : null,
+      currentPrice != null && currentPrice > 0 && extrinsicValue != null
+        ? (extrinsicValue / currentPrice) * 100
+        : null,
     daysToExpiry: dte,
     currentPnl,
   }
@@ -270,10 +419,11 @@ export function buildPremiumByMonth(
     const month = opened.getMonth()
     const entry = monthMap.get(month)!
 
+    const totalPremium = opt.premium * opt.qty * 100
     if (opt.strategy_type === "Wheel") {
-      entry.wheel += opt.premium
+      entry.wheel += totalPremium
     } else if (opt.strategy_type === "LEAPS") {
-      entry.leaps += opt.premium
+      entry.leaps += totalPremium
     }
     // Spread strategy falls through (not tracked separately in chart)
   }
@@ -303,7 +453,7 @@ export function buildOptionsRows(options: OptionRecord[]): OptionsRow[] {
 
   // Chain head rows with sub-rows
   for (const chain of chains) {
-    const legRows: OptionsRow[] = chain.legs.map((leg) => ({
+    const legRows: OptionsRow[] = [...chain.legs].reverse().map((leg) => ({
       option: leg,
       isChainHead: false,
       cumulativeProfit: null,

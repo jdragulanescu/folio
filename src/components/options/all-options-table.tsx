@@ -29,7 +29,7 @@ import { allColumns } from "./options-columns"
 
 function getRowClassName(row: OptionsRow): string {
   if (row.option.status === "Open") {
-    const dte = daysToExpiry(row.option.expiration)
+    const dte = daysToExpiry(row.option.expiration, row.option.status)
     if (dte < 0) return "bg-destructive/10"
     if (dte <= 7) return "bg-amber-500/10"
   }
