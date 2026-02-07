@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest"
 import {
   computeHolding,
   computePortfolio,
+  computeRealisedGainsByFiscalYear,
+  getFiscalYear,
   toDisplay,
 } from "../calculations"
 import Big from "big.js"
@@ -424,5 +426,116 @@ describe("Big.js configuration", () => {
   it("does NOT restrict decimal places globally", () => {
     // Big.DP should remain at default 20, not 2
     expect(Big.DP).toBe(20)
+  })
+})
+
+// ============================================================================
+// getFiscalYear
+// ============================================================================
+describe("getFiscalYear", () => {
+  it("date after 5 April returns current/next year", () => {
+    expect(getFiscalYear("2024-04-06")).toBe("2024/25")
+    expect(getFiscalYear("2024-12-31")).toBe("2024/25")
+  })
+
+  it("5 April is still previous fiscal year", () => {
+    expect(getFiscalYear("2025-04-05")).toBe("2024/25")
+  })
+
+  it("date before 6 April returns previous/current year", () => {
+    expect(getFiscalYear("2025-01-10")).toBe("2024/25")
+    expect(getFiscalYear("2025-03-31")).toBe("2024/25")
+  })
+
+  it("exactly 6 April starts new fiscal year", () => {
+    expect(getFiscalYear("2025-04-06")).toBe("2025/26")
+  })
+
+  it("handles edge of year boundary", () => {
+    expect(getFiscalYear("2024-01-01")).toBe("2023/24")
+    expect(getFiscalYear("2024-04-06")).toBe("2024/25")
+  })
+})
+
+// ============================================================================
+// computeRealisedGainsByFiscalYear
+// ============================================================================
+describe("computeRealisedGainsByFiscalYear", () => {
+  it("computes P&L for single symbol with one sell", () => {
+    const txBySymbol = new Map([
+      [
+        "AAPL",
+        [
+          tx("Buy", 100, 50, "2024-01-01"), // cost = 5000
+          tx("Sell", 100, 60, "2024-06-15"), // proceeds = 6000, P&L = 1000
+        ],
+      ],
+    ])
+    const result = computeRealisedGainsByFiscalYear(txBySymbol)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].fiscalYear).toBe("2024/25")
+    expect(result[0].sellCount).toBe(1)
+    expect(Number(result[0].totalProceeds.toFixed(2))).toBe(6000)
+    expect(Number(result[0].totalCostBasis.toFixed(2))).toBe(5000)
+    expect(Number(result[0].realisedPnl.toFixed(2))).toBe(1000)
+  })
+
+  it("computes P&L across multiple symbols", () => {
+    const txBySymbol = new Map([
+      [
+        "AAPL",
+        [
+          tx("Buy", 100, 50, "2024-01-01"),
+          tx("Sell", 50, 60, "2024-06-15"), // P&L = 50*(60-50) = 500
+        ],
+      ],
+      [
+        "MSFT",
+        [
+          tx("Buy", 200, 40, "2024-02-01"),
+          tx("Sell", 100, 35, "2024-07-01"), // P&L = 100*(35-40) = -500
+        ],
+      ],
+    ])
+    const result = computeRealisedGainsByFiscalYear(txBySymbol)
+
+    expect(result).toHaveLength(1) // both in 2024/25
+    expect(result[0].sellCount).toBe(2)
+    expect(Number(result[0].realisedPnl.toFixed(2))).toBe(0) // 500 + (-500) = 0
+  })
+
+  it("splits sales across fiscal years", () => {
+    const txBySymbol = new Map([
+      [
+        "AAPL",
+        [
+          tx("Buy", 200, 50, "2024-01-01"),
+          tx("Sell", 100, 60, "2024-06-15"), // FY 2024/25, P&L = 1000
+          tx("Sell", 100, 70, "2025-06-15"), // FY 2025/26, P&L = 2000
+        ],
+      ],
+    ])
+    const result = computeRealisedGainsByFiscalYear(txBySymbol)
+
+    expect(result).toHaveLength(2)
+    // Sorted descending by fiscal year
+    expect(result[0].fiscalYear).toBe("2025/26")
+    expect(Number(result[0].realisedPnl.toFixed(2))).toBe(2000)
+    expect(result[1].fiscalYear).toBe("2024/25")
+    expect(Number(result[1].realisedPnl.toFixed(2))).toBe(1000)
+  })
+
+  it("returns empty array when no sells", () => {
+    const txBySymbol = new Map([
+      ["AAPL", [tx("Buy", 100, 50, "2024-01-01")]],
+    ])
+    const result = computeRealisedGainsByFiscalYear(txBySymbol)
+    expect(result).toHaveLength(0)
+  })
+
+  it("handles empty input", () => {
+    const result = computeRealisedGainsByFiscalYear(new Map())
+    expect(result).toHaveLength(0)
   })
 })
