@@ -113,7 +113,7 @@ Plans:
   1. The Add Transaction form accepts symbol (with autocomplete), type, price, shares, date, and platform — amount auto-calculates — and submitting creates the transaction in NocoDB, with new symbols auto-created in the symbols table
   2. The Add Option form accepts all required fields (ticker, strategy_type, call/put, buy/sell, strike, expiration, qty, premium) plus optional fields (delta, IV, moneyness, collateral, notes) and creates the option in NocoDB
   3. The Close/Roll option workflow updates status, close date, close premium, and profit — with days held and return% auto-calculated
-  4. Add Deposit and Add Dividend forms create records in NocoDB and the affected pages refresh to show new data
+  4. Add Deposit and Add Dividend forms create records in NocoDB and the affected pages refresh to show new data. **Note**: Add Deposit must auto-populate `amount_usd` by fetching the current GBP/USD rate from Tiingo (`/tiingo/fx/gbpusd/prices`) and computing `amount_gbp × rate`. This is critical for accurate cash balance calculations.
   5. Archived brokers (Freetrade, Stake, eToro) are visually distinguished from active brokers in the UI (greyed or labelled)
 **Plans**: TBD
 
