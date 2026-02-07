@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** One place to see the full portfolio -- stocks and bought options together with live prices -- without manually maintaining a spreadsheet.
-**Current focus:** Phase 3 - Portfolio Overview (in progress)
+**Current focus:** Phases 3 & 4 executing in parallel
 
 ## Current Position
 
-Phase: 3 of 8 (Portfolio Overview)
-Plan: 1 of 3 in Phase 3 (complete)
+Phase: 3 & 4 of 8 (Portfolio Overview + Transactions & Options Display)
+Plan: 04-01 complete (1 of 4 in Phase 4), 03-01 complete (1 of 3 in Phase 3)
 Status: In progress
-Last activity: 2026-02-07 -- Completed 03-01-PLAN.md (dependencies, data assembly, page shell)
+Last activity: 2026-02-07 -- Completed 04-01-PLAN.md (dependencies, data assembly, formatting)
 
-Progress: [████░░░░░░] 35%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 4min
-- Total execution time: 0.43 hours
+- Total execution time: 0.48 hours
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [████░░░░░░] 35%
 | 01 | 3/3 | 15min | 5min |
 | 02 | 3/3 | 9min | 3min |
 | 03 | 1/3 | 3min | 3min |
+| 04 | 1/4 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (6min), 02-01 (2min), 02-03 (4min), 02-02 (3min), 03-01 (3min)
+- Last 5 plans: 02-01 (2min), 02-03 (4min), 02-02 (3min), 03-01 (3min), 04-01 (4min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -76,6 +77,11 @@ Recent decisions affecting current work:
 - [03-01]: Shares exported with 6 decimal places for fractional share accuracy
 - [03-01]: dayChange computed per-holding then summed; null changePct treated as 0
 - [03-01]: unrealisedPnlPct as (unrealisedPnl / totalCost) * 100 with zero guard
+- [04-01]: formatCurrency defaults to USD (was GBP) since portfolio holds US stocks
+- [04-01]: Roll chain matching uses call_put type + 5-day proximity heuristic
+- [04-01]: Premium chart groups by opened date month (when premium was received/paid)
+- [04-01]: LEAPS P&L from underlying stock intrinsic value (no free options pricing API)
+- [04-01]: avgDaysHeld excludes options with null days_held for accuracy
 
 ### Pending Todos
 
@@ -97,5 +103,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed 03-01-PLAN.md (dependencies, data assembly, page shell)
+Stopped at: Completed 04-01-PLAN.md (dependencies, data assembly, formatting)
 Resume file: None
